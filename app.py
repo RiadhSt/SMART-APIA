@@ -88,7 +88,7 @@ if prompt := st.chat_input("اسألني عن أي تفصيل في وثائق AP
 
             # استخدام 2.5 Pro لضمان أعلى مستوى من التحليل والدقة
             response = client.models.generate_content(
-                model="gemini-2.5-pro", 
+                model="gemini-flash-latest", 
                 contents=content_payload,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTIONS,
