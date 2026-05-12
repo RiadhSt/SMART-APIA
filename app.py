@@ -4,100 +4,77 @@ from google.genai import types
 import glob
 import os
 
-# --- 1. إعداد المفتاح (Secrets) ---
+# --- 1. الإعدادات (تأكد من وجود المفتاح في Secrets) ---
 try:
-    # سيجرب الكود البحث عن أي مسمى وضعته في الإعدادات
     api_key = st.secrets.get("GEMINI_API_KEY") or st.secrets.get("SMART APIA API Key")
     client = genai.Client(api_key=api_key)
 except Exception as e:
-    st.error("تنبيه: تأكد من وضع API Key في إعدادات Secrets على Streamlit Cloud.")
+    st.error("خطأ في المفتاح: تأكد من إضافته في إعدادات Streamlit Secrets.")
     st.stop()
 
-# --- 2. إعدادات الصفحة و RTL ---
-st.set_page_config(page_title="APIA Expert Pro", page_icon="🌱")
-st.markdown("""
-    <style>
-    [data-testid="stAppViewContainer"], [data-testid="stChatMessage"], [data-testid="stChatInput"] {
-        direction: RTL; text-align: right;
-    }
-    div[data-testid="stChatMessage"] { flex-direction: row-reverse; }
-    </style>
-    """, unsafe_allow_html=True)
-
+# --- 2. إعدادات الواجهة (RTL) ---
+st.set_page_config(page_title="APIA Smart Assistant", page_icon="🌱")
+st.markdown("<style>*{direction: RTL; text-align: right;}</style>", unsafe_allow_html=True)
 st.title("🤖 مساعد APIA الذكي")
 
-# --- 3. التعليمات ---
-SYSTEM_PROMPT = "أنت مساعد خبير لوكالة APIA. أجب بدقة من الملفات المرفقة فقط."
-
-# --- 4. رفع الملفات تلقائياً ---
+# --- 3. رفع الملفات لمرة واحدة فقط (لزيادة السرعة) ---
 @st.cache_resource
-def load_all_pdfs():
+def prepare_files():
     pdf_files = glob.glob("*.pdf")
-    uploaded_refs = []
     if not pdf_files:
         return []
-    for pdf in pdf_files:
+    uploaded = []
+    for f in pdf_files:
         try:
-            with st.spinner(f"جاري معالجة المرجع: {pdf}..."):
-                u_file = client.files.upload(file=pdf)
-                uploaded_refs.append(u_file)
-        except Exception:
-            pass 
-    return uploaded_refs
+            with st.spinner(f"جاري معالجة: {f}..."):
+                u = client.files.upload(file=f)
+                uploaded.append(u)
+        except: pass
+    return uploaded
 
-all_files = load_all_pdfs()
+all_files = prepare_files()
 
-# --- 5. منطق الدردشة بنظام الـ Streaming ---
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# عرض التاريخ
-for m in st.session_state.messages:
-    with st.chat_message(m["role"]):
-        st.markdown(m["content"])
-
-# إدخال المستخدم
-# --- 5. منطق الدردشة مع الذاكرة (Chat Session) ---
-if "chat_session" not in st.session_state:
-    # نبدأ جلسة جديدة ونرسل الملفات كـ "سياق أساسي" لمرة واحدة
-    st.session_state.chat_session = client.chats.create(
+# --- 4. إدارة الذاكرة (Chat Session) لعدم النسيان ---
+if "chat" not in st.session_state:
+    # إنشاء الجلسة لمرة واحدة عند فتح التطبيق
+    # استخدمنا gemini-2.5-flash كما ظهر في قائمتك
+    st.session_state.chat = client.chats.create(
         model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
+            system_instruction="أنت مساعد APIA. استخدم الملفات المرفقة كمرجع أساسي وأجب بدقة.",
             temperature=0.0
         )
     )
+    st.session_state.history = []
 
-# عرض الرسائل السابقة من ذاكرة الجلسة
-for m in st.session_state.messages:
-    with st.chat_message(m["role"]):
-        st.markdown(m["content"])
+# عرض المحادثة السابقة
+for msg in st.session_state.history:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-if prompt := st.chat_input("اسأل عن وثائق وكالة APIA..."):
-    # عرض سؤال المستخدم
-    st.session_state.messages.append({"role": "user", "content": prompt})
+# --- 5. تنفيذ الإجابة بنظام Streaming (التدفق) ---
+if prompt := st.chat_input("اسأل عن أي تفصيل في وثائق APIA..."):
+    st.session_state.history.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
         placeholder = st.empty()
-        full_response = ""
+        full_res = ""
         
         try:
-            # إرسال السؤال مع الملفات في أول مرة فقط، ثم السؤال وحده لاحقاً
-            # الموديل سيتذكر الملفات والأسئلة السابقة تلقائياً
-            input_content = all_files + [prompt] if not st.session_state.messages[:-1] else prompt
+            # في أول رسالة فقط نرسل الملفات، بعدها يرسل الموديل النص فقط لأنه يتذكرها
+            content = all_files + [prompt] if len(st.session_state.history) <= 1 else prompt
             
-            responses = st.session_state.chat_session.send_message_stream(
-                msg=input_content
-            )
+            # إرسال الرسالة بنظام التدفق
+            stream = st.session_state.chat.send_message_stream(msg=content)
             
-            for chunk in responses:
-                full_response += chunk.text
-                placeholder.markdown(full_response + "▌")
+            for chunk in stream:
+                full_res += chunk.text
+                placeholder.markdown(full_res + "▌")
             
-            placeholder.markdown(full_response)
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            placeholder.markdown(full_res)
+            st.session_state.history.append({"role": "assistant", "content": full_res})
             
         except Exception as e:
-            st.error(f"حدث خطأ: {e}")
+            st.error(f"عذراً، حدث خطأ: {e}")
