@@ -9,61 +9,62 @@ try:
     api_key = st.secrets.get("GEMINI_API_KEY") or st.secrets.get("SMART APIA API Key")
     client = genai.Client(api_key=api_key)
 except Exception:
-    st.error("خطأ في المفتاح.")
+    st.error("تأكد من وجود API Key في Secrets.")
     st.stop()
 
 # --- 2. واجهة التطبيق ---
-st.set_page_config(page_title="APIA Expert", page_icon="🌱")
+st.set_page_config(page_title="APIA Expert Pro", page_icon="🌱")
 st.markdown("<style>*{direction: RTL; text-align: right;}</style>", unsafe_allow_html=True)
 st.title("🤖 مساعد APIA الذكي")
 
-# --- 3. رفع الملفات لمرة واحدة (السرعة) ---
+# --- 3. رفع الملفات مرة واحدة (السرعة) ---
 @st.cache_resource
-def load_docs():
+def load_docs_once():
     pdfs = glob.glob("*.pdf")
     return [client.files.upload(file=f) for f in pdfs] if pdfs else []
 
-all_files = load_docs()
+all_files = load_docs_once()
 
-# --- 4. الذاكرة (Chat Session) ---
+# --- 4. إدارة الجلسة (الذاكرة القوية) ---
+# هذا الجزء هو المسؤول عن عدم نسيان الأسئلة السابقة
 if "chat_session" not in st.session_state:
     st.session_state.chat_session = client.chats.create(
-        model="gemini-2.5-flash", 
+        model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
-            system_instruction="أنت مساعد APIA الرسمي. تذكر سياق الحوار بدقة.",
+            system_instruction="أنت خبير وكالة APIA. أجب من الملفات وتذكر كل ما قاله المستخدم سابقاً.",
             temperature=0.0
         )
     )
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+if "history" not in st.session_state:
+    st.session_state.history = []
 
-for m in st.session_state.messages:
-    with st.chat_message(m["role"]): st.markdown(m["content"])
+# عرض المحادثة السابقة
+for msg in st.session_state.history:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# --- 5. التنفيذ (Streaming + الذاكرة) ---
-if prompt := st.chat_input("اسأل عن وثائق APIA..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"): st.markdown(prompt)
+# --- 5. التنفيذ الذكي ---
+if prompt := st.chat_input("اسألني عن أي تفصيل..."):
+    st.session_state.history.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
     with st.chat_message("assistant"):
         placeholder = st.empty()
         full_res = ""
         
-        # تصحيح الخطأ: نرسل الملفات في أول مرة فقط
-        is_first_msg = len(st.session_state.messages) <= 1
-        content_to_send = all_files + [prompt] if is_first_msg else prompt
-        
         try:
-            # تم استبدال msg بـ message لحل خطأ الصورة الأخيرة
-            responses = st.session_state.chat_session.send_message_stream(
-                message=content_to_send 
-            )
+            # نرسل الملفات في أول رسالة فقط، الموديل سيحفظها في الجلسة (Session)
+            content = all_files + [prompt] if len(st.session_state.history) <= 1 else prompt
+            
+            # استخدام message بدلاً من msg لتجنب الخطأ السابق
+            responses = st.session_state.chat_session.send_message_stream(message=content)
             
             for chunk in responses:
                 full_res += chunk.text
                 placeholder.markdown(full_res + "▌")
             
             placeholder.markdown(full_res)
-            st.session_state.messages.append({"role": "assistant", "content": full_res})
+            st.session_state.history.append({"role": "assistant", "content": full_res})
         except Exception as e:
-            st.error(f"عذراً، حدث خطأ: {e}")
+            st.error(f"حدث خطأ: {e}")
