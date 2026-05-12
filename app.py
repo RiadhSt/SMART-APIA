@@ -62,6 +62,7 @@ if prompt := st.chat_input("كيف يمكنني مساعدتك في استثما
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTIONS,
+                    temperature=0.2,  # تجعل الإجابة دقيقة جداً وغير إبداعية خارج النص
                     tools=[types.Tool(google_search=types.GoogleSearch())] # ميزة إضافية للبحث عن أخبار تونس اللحظية
                 )
             )
