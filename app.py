@@ -36,7 +36,7 @@ SYSTEM_INSTRUCTIONS = """
 def setup_context_cache():
     # ملاحظة: الـ Caching يتطلب تعيين وقت انتهاء (TTL) - هنا ضبطناه لـ ساعتين
     cache = client.caches.create(
-        model="models/gemini-1.5-flash-001",
+        model="models/gemini-2.5-flash",
         config=types.CacheConfig(
             display_name="apia_policy_cache",
             system_instruction=SYSTEM_INSTRUCTIONS,
