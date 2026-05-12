@@ -57,7 +57,24 @@ for m in st.session_state.messages:
         st.markdown(m["content"])
 
 # إدخال المستخدم
+# --- 5. منطق الدردشة مع الذاكرة (Chat Session) ---
+if "chat_session" not in st.session_state:
+    # نبدأ جلسة جديدة ونرسل الملفات كـ "سياق أساسي" لمرة واحدة
+    st.session_state.chat_session = client.chats.create(
+        model="gemini-2.0-flash",
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            temperature=0.0
+        )
+    )
+
+# عرض الرسائل السابقة من ذاكرة الجلسة
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
+
 if prompt := st.chat_input("اسأل عن وثائق وكالة APIA..."):
+    # عرض سؤال المستخدم
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -67,14 +84,12 @@ if prompt := st.chat_input("اسأل عن وثائق وكالة APIA..."):
         full_response = ""
         
         try:
-            # تفعيل خاصية التدفق (Streaming)
-            responses = client.models.generate_content_stream(
-                model="gemini-2.5-flash",
-                contents=all_files + [prompt],
-                config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
-                    temperature=0.0
-                )
+            # إرسال السؤال مع الملفات في أول مرة فقط، ثم السؤال وحده لاحقاً
+            # الموديل سيتذكر الملفات والأسئلة السابقة تلقائياً
+            input_content = all_files + [prompt] if not st.session_state.messages[:-1] else prompt
+            
+            responses = st.session_state.chat_session.send_message_stream(
+                msg=input_content
             )
             
             for chunk in responses:
@@ -85,4 +100,4 @@ if prompt := st.chat_input("اسأل عن وثائق وكالة APIA..."):
             st.session_state.messages.append({"role": "assistant", "content": full_response})
             
         except Exception as e:
-            st.error(f"حدث خطأ أثناء الاتصال بالموديل: {e}")
+            st.error(f"حدث خطأ: {e}")
