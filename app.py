@@ -1,109 +1,75 @@
 import streamlit as st
 from google import genai
 from google.genai import types
+import glob
 import os
 
-# --- 1. الإعدادات ---
-# ملاحظة: تأكد أن الاسم في Streamlit Secrets هو "GEMINI_API_KEY" لتجنب خطأ KeyError
+# --- 1. جلب المفتاح بأمان ---
 try:
-    ST_API_KEY = st.secrets["GEMINI_API_KEY"]
-    client = genai.Client(api_key=ST_API_KEY)
+    # سيقرأ أي اسم وضعته في Secrets (سواء GEMINI_API_KEY أو غيره)
+    # لكن يفضل توحيده في Secrets باسم GEMINI_API_KEY
+    api_key = st.secrets.get("GEMINI_API_KEY") or st.secrets.get("SMART APIA API Key")
+    client = genai.Client(api_key=api_key)
 except Exception as e:
-    st.error("خطأ: لم يتم العثور على مفتاح API. تأكد من إضافته في Secrets باسم GEMINI_API_KEY")
+    st.error("مشكلة في مفتاح الـ API. تأكد من وضعه في Secrets.")
     st.stop()
 
-# --- 2. إعدادات الواجهة و RTL ---
-st.set_page_config(page_title="APIA Expert Pro", page_icon="🌱")
-st.markdown("""
-    <style>
-    [data-testid="stAppViewContainer"], [data-testid="stChatMessage"], [data-testid="stChatInput"] {
-        direction: RTL; text-align: right;
-    }
-    div[data-testid="stChatMessage"] { flex-direction: row-reverse; }
-    </style>
-    """, unsafe_allow_html=True)
-
+# --- 2. واجهة التطبيق ---
+st.set_page_config(page_title="APIA Expert", page_icon="🌱")
+st.markdown("<style>*{direction: RTL; text-align: right;}</style>", unsafe_allow_html=True)
 st.title("🤖 مساعد APIA الذكي")
 
-# --- 3. التعليمات الصارمة (System Instructions) ---
-SYSTEM_INSTRUCTIONS = """أنت "المساعد الرقمي الرسمي لوكالة APIA". 
-مهمتك: الإجابة بدقة مطلقة من كافة الملفات المرفقة (عروض، قوانين، أدلة).
-القوانين:
-1. ادمج المعلومات من مختلف الملفات لتقديم إجابة شاملة.
-2. الملفات المرفقة هي المرجع الأول والنهائي.
-3. التنسيق: استخدم جداول Markdown للأرقام والنسب.
-4. في حال غياب المعلومة، وجه المستخدم لـ kouki.riadh@apia.com.tn.
-"""
+# --- 3. التعليمات ---
+SYSTEM_PROMPT = "أنت مساعد خبير لوكالة APIA. أجب بدقة من الملفات المرفقة فقط."
 
-# --- 4. وظيفة رفع الملفات من GitHub ---
+# --- 4. رفع "كل" ملفات الـ PDF تلقائياً ---
 @st.cache_resource
-def upload_github_files():
-    # تأكد أن هذه الأسماء تطابق تماماً ملفاتك في GitHub (بدون حروف خاصة أو مسافات معقدة)
-    filenames = [
-        "Guide_Global.pdf", 
-        "RAPPORT_2025_PUBLIQUE.pdf",
-        "Rapport_Comite_Inv.pdf",
-        "guide-de-l_investisseur-etranger.pdf",
-        "guide_societes_communautaires.pdf",
-        "APIA_QA.pdf"
-    ]
+def load_all_pdfs():
+    # يبحث عن أي ملف ينتهي بـ .pdf في المجلد الحالي
+    pdf_files = glob.glob("*.pdf")
+    uploaded_refs = []
     
-    uploaded_files_list = []
-    
-    for f_name in filenames:
-        if os.path.exists(f_name):
-            try:
-                with st.spinner(f"جاري ربط مرجع: {f_name}..."):
-                    # الرفع باستخدام المعامل الصحيح 'file'
-                    u_file = client.files.upload(file=f_name) 
-                    uploaded_files_list.append(u_file)
-            except Exception as e:
-                st.error(f"خطأ في تحميل {f_name}: {e}")
-        else:
-            st.warning(f"الملف {f_name} غير موجود في GitHub.")
-            
-    return uploaded_files_list
+    if not pdf_files:
+        st.warning("لم يتم العثور على أي ملفات PDF في GitHub.")
+        return []
 
-# تنفيذ عملية الربط (تتم مرة واحدة بفضل الكاش)
-reference_files = upload_github_files()
+    for pdf in pdf_files:
+        try:
+            with st.spinner(f"جاري قراءة: {pdf}..."):
+                u_file = client.files.upload(file=pdf)
+                uploaded_refs.append(u_file)
+        except Exception as e:
+            st.error(f"فشل رفع {pdf}: {e}")
+    return uploaded_refs
 
+# تنفيذ الرفع
+all_files = load_all_pdfs()
+
+# --- 5. الدردشة ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
 
-# --- 5. التنفيذ بالدقة والسرعة (Gemini 2.0 Flash) ---
-if prompt := st.chat_input("اسألني عن أي تفصيل في وثائق APIA..."):
+if prompt := st.chat_input("اسأل عن استثمارات وكالة APIA..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        placeholder = st.empty()
-        
         try:
-            # تجميع الملفات مع السؤال
-            content_payload = []
-            for ref in reference_files:
-                content_payload.append(ref)
-            
-            content_payload.append(prompt)
-
-            # استخدام gemini-2.0-flash للسرعة الفائقة مع الحفاظ على الدقة
+            # نرسل كل الملفات التي وجدناها مع السؤال
             response = client.models.generate_content(
-                model="gemini-2.5-flash", 
-                contents=content_payload,
+                model="gemini-2.5-flash",
+                contents=all_files + [prompt],
                 config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_INSTRUCTIONS,
-                    temperature=0.0,
-                    tools=[types.Tool(google_search=types.GoogleSearch())]
+                    system_instruction=SYSTEM_PROMPT,
+                    temperature=0.0
                 )
             )
-            
-            placeholder.markdown(response.text)
+            st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
-            
         except Exception as e:
-            st.error(f"عذراً، حدث خطأ تقني أثناء التوليد: {e}")
+            st.error(f"حدث خطأ: {e}")
