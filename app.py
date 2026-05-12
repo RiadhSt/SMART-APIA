@@ -58,7 +58,7 @@ if prompt := st.chat_input("كيف يمكنني مساعدتك في استثما
             # استخدام الموديل مباشرة مع التعليمات (سريع جداً في Flash 2.5)
             # لاحظ: Gemini 2.5 Flash يمتلك ذاكرة ضخمة تغنيك عن الـ Cache المعقد برمجياً حالياً
             response = client.models.generate_content(
-                model="gemini-2.0-flash", 
+                model="gemini-2.5-flash", 
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTIONS,
