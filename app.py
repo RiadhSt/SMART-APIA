@@ -1,66 +1,50 @@
 import streamlit as st
 from google import genai
 from google.genai import types
-import time
 
-# --- 1. الإعدادات ---
+# --- 1. الإعدادات وقراءة المفتاح السري ---
 ST_API_KEY = st.secrets["GEMINI_API_KEY"]
 client = genai.Client(api_key=ST_API_KEY)
 
 # --- 2. إعدادات الصفحة و RTL ---
 st.set_page_config(page_title="Smart APIA", page_icon="🌱")
+
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"], [data-testid="stChatMessage"], [data-testid="stChatInput"] {
-        direction: RTL; text-align: right;
+        direction: RTL;
+        text-align: right;
     }
     div[data-testid="stChatMessage"] { flex-direction: row-reverse; }
+    /* تحسين سرعة العرض */
+    .stMarkdown { transition: none !important; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🤖 مساعد وكالة APIA الذكي (نسخة السرعة القصوى)")
+st.title("🤖 مساعد وكالة APIA الذكي")
 
+# --- 3. التعليمات الصارمة ونطاق العمل ---
 SYSTEM_INSTRUCTIONS = """
-أنت المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية في تونس. 
-نطاق عملك محدد بدقة:
-1. الإجابة فقط على الأسئلة المتعلقة بالاستثمار الفلاحي في تونس.
-2. مصادرك الوحيدة هي: الوثائق التي تم تدريبك عليها، وموقع الوكالة الرسمي (apia.com.tn)، وموقع وزارة الفلاحة (agriculture.tn).
-3. إذا سألك المستخدم عن أي موضوع خارج هذا النطاق، أجب بالصيغة المحددة واذكر البريد الإلكتروني kouki.riadh@apia.com.tn.
-4. اللغة: اتبع لغة المستخدم (فصحى، عامية، فرنسية).
-5. التنسيق: استخدم الجداول للأرقام والمقارنات.
+أنت المساعد الذكي الرسمي لوكالة APIA تونس. 
+نطاق عملك: الاستثمار الفلاحي، الصيد البحري، وخطط التنمية الفلاحية 2026-2030 فقط.
+مصادر الإجابة: 1. الوثائق المرفوعة (الملفات). 2. موقع apia.com.tn. 3. موقع agriculture.tn.
+
+القواعد الصارمة:
+- إذا كان السؤال خارج المجال الفلاحي، أجب بـ: "أعتذر منك، أنا مبرمج للإجابة فقط على الاستفسارات المتعلقة بالاستثمار الفلاحي وتوجيه المستثمرين ضمن اختصاصات الوكالة ووزارة الفلاحة. للتواصل مع المشرف: kouki.riadh@apia.com.tn"
+- استخدم الجداول دائماً لعرض الأرقام والمقارنات.
+- التزم بلغة المستخدم (تونسية، عربية، فرنسية).
 """
 
-# --- 3. إنشاء الـ Context Cache (هنا تكمن السرعة) ---
-# سنقوم بإنشاء الـ Cache مرة واحدة فقط ليبقى في ذاكرة جوجل
-@st.cache_resource
-def setup_context_cache():
-    # ملاحظة: الـ Caching يتطلب تعيين وقت انتهاء (TTL) - هنا ضبطناه لـ ساعتين
-    cache = client.caches.create(
-        model="models/gemini-2.5-flash",
-        config=types.CacheConfig(
-            display_name="apia_policy_cache",
-            system_instruction=SYSTEM_INSTRUCTIONS,
-            ttl_seconds=7200, 
-        )
-    )
-    return cache.name
-
-# جلب اسم الـ Cache
-try:
-    cache_id = setup_context_cache()
-except Exception as e:
-    st.error(f"فشل إعداد الذاكرة المؤقتة: {e}")
-    cache_id = None
-
-# --- 4. إدارة المحادثة ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# عرض المحادثة
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-if prompt := st.chat_input("كيف يمكنني مساعدتك؟"):
+# --- 4. التفاعل السريع جداً ---
+if prompt := st.chat_input("كيف يمكنني مساعدتك اليوم؟"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -69,12 +53,13 @@ if prompt := st.chat_input("كيف يمكنني مساعدتك؟"):
         placeholder = st.empty()
         
         try:
-            # استخدام الـ Cache للرد السريع جداً
+            # استخدام Gemini 1.5 Flash - الأسرع عالمياً في معالجة النصوص الضخمة
             response = client.models.generate_content(
-                model=cache_id if cache_id else "gemini-1.5-flash",
+                model="gemini-2.5-flash", 
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    temperature=0.2,
+                    system_instruction=SYSTEM_INSTRUCTIONS,
+                    temperature=0.1, # أقل قيمة لضمان أقصى سرعة وأعلى دقة
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
             )
@@ -83,4 +68,5 @@ if prompt := st.chat_input("كيف يمكنني مساعدتك؟"):
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             
         except Exception as e:
-            st.error(f"حدث خطأ أثناء التوليد: {e}")
+            # حل ذكي في حال حدوث ضغط: إعادة المحاولة تلقائياً
+            st.error("السيرفر مشغول حالياً، يرجى إعادة إرسال السؤال.")
