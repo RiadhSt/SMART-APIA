@@ -37,7 +37,7 @@ def upload_github_files():
     filenames = [
         "Guide Global.pdf", 
         "RAPPORT_2025_PUBLIQUE.pdf",
-        "Rapport Comité Inv.pdf",
+        "Rapport Comite Inv.pdf",
         "guide-de-l_investisseur-etranger.pdf",
         "guide_societes_communautaires.pdf",
         "APIA_QA.pdf"
