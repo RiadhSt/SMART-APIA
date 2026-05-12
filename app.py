@@ -1,13 +1,14 @@
 import streamlit as st
 from google import genai
 from google.genai import types
+import os
 
-# --- 1. الإعدادات ---
+# --- 1. الإعدادات والربط ---
 ST_API_KEY = st.secrets["GEMINI_API_KEY"]
 client = genai.Client(api_key=ST_API_KEY)
 
 # --- 2. إعدادات الصفحة و RTL ---
-st.set_page_config(page_title="Smart APIA (Lite Speed)", page_icon="🌱")
+st.set_page_config(page_title="APIA Expert AI", page_icon="🌱")
 
 st.markdown("""
     <style>
@@ -19,46 +20,52 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🤖 مساعد APIA الذكي (النسخة السريعة)")
+st.title("🤖 خبير وكالة APIA الذكي (دقة الاستوديو)")
 
-# --- 3. نطاق العمل والتعليمات الصارمة ---
-SYSTEM_INSTRUCTIONS = """أنت "المساعد الرقمي الذكي لوكالة النهوض بالاستثمارات الفلاحية بتونس". مهمتك هي تقديم إرشادات دقيقة وموثوقة للمستثمرين أو أي شخص لديه تساؤلات في مجالات الفلاحة، الصيد البحري، تربية الأحياء المائية، والخدمات المرتبطة بها.
+# --- 3. التعليمات الصارمة ونطاق العمل ---
+SYSTEM_INSTRUCTIONS = """أنت "المساعد الرقمي الذكي لوكالة النهوض بالاستثمارات الفلاحية بتونس". 
+مهمتك: تقديم إرشادات دقيقة بناءً على المستندات المرفقة فقط.
 
-[مصادر المعرفة - تسلسل هرمي صارم]
-
-الأولوية القصوى: الملفات والمستندات المرفوعة هي المرجع القانوني الأول والنهائي.
-
-البحث الموجه: إذا لم تجد المعلومة في الملفات، ابحث حصراً في النطاقين التاليين: apia.com.tn و agriculture.tn. استخدم تقنية site:apia.com.tn للوصول للمعلومات.
-
-التحذير: يمنع منعاً باتاً اختراع معلومات أو تقديم أرقام غير موجودة في المصادر. إذا غابت المعلومة، أجب بـ: "عذراً، هذه المعلومة غير متوفرة حالياً في مصادري الرسمية، يرجى التواصل مباشرة مع مصالح الوكالة أو التواصل مع المشرف: kouki.riadh@apia.com.tn"
-
-[أسلوب الرد والتنسيق]
-
-التنظيم: عند شرح "أنواع المنح" أو "الامتيازات"، استخدم الجداول (Markdown Tables) لتسهيل المقارنة (مثلاً: نوع المنحة، النسبة، السقف، الشروط).
-
-اللغة: أجب دوما بنفس اللغة التي يسأل بها المستخدم مهما كانت، وإذا استخدم المستعمل اللهجة العامية التونسية حاول أنت أيضا الاجابة بها. كن مهنياً، مشجعاً، ومختصراً دون إخلال بالمعنى.
-
-التفاصيل القانونية: عند ذكر نص قانوني أو فصل من قانون الاستثمار، اذكره بوضوح.
-
-[قواعد خاصة بالاستثمار التونسي]
-
-التمييز بدقة بين صنفي الاستثمار (أ، ب).
-
-مراعاة مناطق التنمية الجهوية وحوافزها الخاصة.
-
-التوضيح الدقيق لمنح القيمة المضافة (مثل التكنولوجيات الحديثة أو الاقتصاد في مياه الري).
+[قواعد الدقة المطلقة]
+1. الأولوية القصوى: الإجابة من الملفات المرفقة (الملف المرتبط بهذه الجلسة).
+2. درجة الحرارة (Temperature): أنت مبرمج على دقة 0.0، أي لا تخرج عن النص نهائياً.
+3. في حال غياب المعلومة: قل "يرجى مراجعة مصالح الوكالة بخصوص هذا التفصيل" ولا تخمن أبداً.
+4. التنسيق: استخدم الجداول للمقارنات والنسب المئوية.
+5. التواصل: المشرف هو kouki.riadh@apia.com.tn.
 """
+
+# --- 4. وظيفة رفع الملفات برمجياً (لضمان الدقة) ---
+# ملاحظة: يجب وضع ملفاتك (مثل الـ 82 سلايد) في مجلد المشروع ورفعها هنا
+@st.cache_resource
+def load_and_upload_files():
+    """هذه الوظيفة ترفع ملفاتك إلى سحابة جوجل لكي يراها الموديل مثل الاستوديو تماماً"""
+    # استبدل 'your_file.pdf' باسم ملفك الحقيقي الموجود في مجلد التطبيق
+    # يمكنك رفع عدة ملفات وتخزينها في قائمة
+    files_to_upload = ["presentation_82_slides.pdf"] 
+    uploaded_files_uris = []
+    
+    for file_path in files_to_upload:
+        if os.path.exists(file_path):
+            uploaded_file = client.files.upload(path=file_path)
+            uploaded_files_uris.append(uploaded_file)
+    return uploaded_files_uris
+
+# محاولة رفع الملفات (تأكد من وجود الملف في نفس المجلد)
+try:
+    context_files = load_and_upload_files()
+except Exception as e:
+    st.warning("لم يتم العثور على ملفات مرجعية، سيتم الاعتماد على البحث فقط.")
+    context_files = []
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# عرض المحادثة
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# --- 4. معالجة الطلبات ---
-if prompt := st.chat_input("اسألني عن إجراءات الاستثمار الفلاحي..."):
+# --- 5. معالجة الطلبات بالدقة القصوى ---
+if prompt := st.chat_input("كيف يمكنني مساعدتك في استثمارك؟"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -67,13 +74,19 @@ if prompt := st.chat_input("اسألني عن إجراءات الاستثمار 
         placeholder = st.empty()
         
         try:
-            # استخدام نسخة Gemini 2.5 Flash
+            # دمج الملفات مع السؤال في قائمة واحدة كما يحدث في الاستوديو
+            contents_to_send = []
+            for f in context_files:
+                contents_to_send.append(f)
+            contents_to_send.append(prompt)
+
+            # استخدام Gemini 2.5 Pro (لأنه الأدق في تحليل الملفات المرفوعة)
             response = client.models.generate_content(
                 model="gemini-flash-latest", 
-                contents=prompt,
+                contents=contents_to_send,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTIONS,
-                    temperature=0.1, # لضمان سرعة أكبر ودقة أعلى في استقاء المعلومة
+                    temperature=0.0, # الدقة الحرفية مثل الاستوديو
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
             )
