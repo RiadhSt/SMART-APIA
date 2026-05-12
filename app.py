@@ -82,7 +82,7 @@ if prompt := st.chat_input("كيف يمكنني مساعدتك في استثما
 
             # استخدام Gemini 2.5 Pro (لأنه الأدق في تحليل الملفات المرفوعة)
             response = client.models.generate_content(
-                model="gemini-flash-latest", 
+                model="gemini-2.5-pro", 
                 contents=contents_to_send,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTIONS,
