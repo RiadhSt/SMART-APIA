@@ -4,7 +4,8 @@ from google.genai import types
 
 # --- 1. إعداد الصفحة والمفتاح ---
 
-ST_API_KEY = "AIzaSyAbeEbVybkQOeaqTAElRJKuxaqiZ4Q3LqA"  # ضع مفتاحك هنا
+# قراءة المفتاح من Secrets الخاصة بـ Streamlit
+API_KEY = st.secrets["GEMINI_API_KEY"]
 client = genai.Client(api_key=ST_API_KEY)
 MODEL_ID = "gemini-2.5-flash"
 
