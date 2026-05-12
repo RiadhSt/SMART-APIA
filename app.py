@@ -4,8 +4,13 @@ from google.genai import types
 import os
 
 # --- 1. الإعدادات ---
-ST_API_KEY = st.secrets["SMART APIA API Key"]
-client = genai.Client(api_key=ST_API_KEY)
+# ملاحظة: تأكد أن الاسم في Streamlit Secrets هو "GEMINI_API_KEY" لتجنب خطأ KeyError
+try:
+    ST_API_KEY = st.secrets["GEMINI_API_KEY"]
+    client = genai.Client(api_key=ST_API_KEY)
+except Exception as e:
+    st.error("خطأ: لم يتم العثور على مفتاح API. تأكد من إضافته في Secrets باسم GEMINI_API_KEY")
+    st.stop()
 
 # --- 2. إعدادات الواجهة و RTL ---
 st.set_page_config(page_title="APIA Expert Pro", page_icon="🌱")
@@ -18,7 +23,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🤖 مساعد APIA الذكي (دقة Studio القصوى)")
+st.title("🤖 مساعد APIA الذكي")
 
 # --- 3. التعليمات الصارمة (System Instructions) ---
 SYSTEM_INSTRUCTIONS = """أنت "المساعد الرقمي الرسمي لوكالة APIA". 
@@ -30,14 +35,14 @@ SYSTEM_INSTRUCTIONS = """أنت "المساعد الرقمي الرسمي لوك
 4. في حال غياب المعلومة، وجه المستخدم لـ kouki.riadh@apia.com.tn.
 """
 
-# --- 4. تصحيح وظيفة رفع الملفات من GitHub ---
+# --- 4. وظيفة رفع الملفات من GitHub ---
 @st.cache_resource
 def upload_github_files():
-    # قائمة الملفات كما تظهر في GitHub الخاص بك (تأكد من الأسماء والامتدادات)
+    # تأكد أن هذه الأسماء تطابق تماماً ملفاتك في GitHub (بدون حروف خاصة أو مسافات معقدة)
     filenames = [
-        "Guide Global.pdf", 
+        "Guide_Global.pdf", 
         "RAPPORT_2025_PUBLIQUE.pdf",
-        "Rapport Comite Inv.pdf",
+        "Rapport_Comite_Inv.pdf",
         "guide-de-l_investisseur-etranger.pdf",
         "guide_societes_communautaires.pdf",
         "APIA_QA.pdf"
@@ -49,7 +54,7 @@ def upload_github_files():
         if os.path.exists(f_name):
             try:
                 with st.spinner(f"جاري ربط مرجع: {f_name}..."):
-                    # تم تصحيح المعامل هنا من 'path' إلى 'file' لحل الخطأ
+                    # الرفع باستخدام المعامل الصحيح 'file'
                     u_file = client.files.upload(file=f_name) 
                     uploaded_files_list.append(u_file)
             except Exception as e:
@@ -59,7 +64,7 @@ def upload_github_files():
             
     return uploaded_files_list
 
-# تنفيذ عملية الربط
+# تنفيذ عملية الربط (تتم مرة واحدة بفضل الكاش)
 reference_files = upload_github_files()
 
 if "messages" not in st.session_state:
@@ -69,7 +74,7 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# --- 5. التنفيذ بالدقة الكاملة ---
+# --- 5. التنفيذ بالدقة والسرعة (Gemini 2.0 Flash) ---
 if prompt := st.chat_input("اسألني عن أي تفصيل في وثائق APIA..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -79,20 +84,20 @@ if prompt := st.chat_input("اسألني عن أي تفصيل في وثائق AP
         placeholder = st.empty()
         
         try:
-            # تجميع الملفات مع السؤال (مطابقة لآلية عمل الاستوديو)
+            # تجميع الملفات مع السؤال
             content_payload = []
             for ref in reference_files:
                 content_payload.append(ref)
             
             content_payload.append(prompt)
 
-            # استخدام 2.5 Pro لضمان أعلى مستوى من التحليل والدقة
+            # استخدام gemini-2.0-flash للسرعة الفائقة مع الحفاظ على الدقة
             response = client.models.generate_content(
-                model="gemini-flash-latest", 
+                model="gemini-2.5-flash", 
                 contents=content_payload,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTIONS,
-                    temperature=0.0, # حرفية مطلقة
+                    temperature=0.0,
                     tools=[types.Tool(google_search=types.GoogleSearch())]
                 )
             )
