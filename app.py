@@ -4,7 +4,7 @@ from google.genai import types
 import os
 
 # --- 1. الإعدادات ---
-ST_API_KEY = st.secrets["GEMINI_API_KEY"]
+ST_API_KEY = st.secrets["SMART APIA API Key"]
 client = genai.Client(api_key=ST_API_KEY)
 
 # --- 2. إعدادات الواجهة و RTL ---
