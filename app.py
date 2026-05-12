@@ -52,9 +52,9 @@ if prompt := st.chat_input("اسألني عن إجراءات الاستثمار 
         placeholder = st.empty()
         
         try:
-            # استخدام نسخة Gemini 2.5 Flash-Lite
+            # استخدام نسخة Gemini 2.5 Flash
             response = client.models.generate_content(
-                model="gemini-2.5-flash-lite", 
+                model="gemini-2.5-flash", 
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTIONS,
