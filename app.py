@@ -35,9 +35,9 @@ SYSTEM_INSTRUCTIONS = """أنت "المساعد الرقمي الرسمي لوك
 def upload_github_files():
     # قائمة الملفات كما تظهر في GitHub الخاص بك (تأكد من الأسماء والامتدادات)
     filenames = [
-        "دليل تعهد ملفات الاستثمار.pdf", 
+        "Guide Global.pdf", 
         "RAPPORT_2025_PUBLIQUE.pdf",
-        "تقرير فريق عمل الإستثمار الخاص نسخة نهائية محينة.pdf",
+        "Rapport Comité Inv.pdf",
         "guide-de-l_investisseur-etranger.pdf",
         "guide_societes_communautaires.pdf",
         "APIA_QA.pdf"
