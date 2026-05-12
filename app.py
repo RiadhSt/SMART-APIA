@@ -36,9 +36,13 @@ def upload_github_files():
     # أضف هنا أسماء الملفات تماماً كما تظهر في حسابك على GitHub
     # تأكد من كتابة الاسم مع الامتداد (مثل .pdf أو .pptx)
     filenames = [
-        "file1.pdf", 
+        "دليل تعهد ملفات الاستثمار.pdf", 
         "presentation_82_slides.pdf",
-        "investment_law.pdf"
+        "RAPPORT_2025_PUBLIQUE.pdf"
+        "تقرير فريق عمل الإستثمار الخاص نسخة نهائية محينة.pdf"
+        "guide-de-l_investisseur-etranger.pdf"
+        "guide_societes_communautaires.pdf"
+        "APIA_QA.pdf"
         # يمكنك إضافة أي عدد من الملفات هنا
     ]
     
