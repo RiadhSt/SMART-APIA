@@ -69,7 +69,7 @@ if prompt := st.chat_input("اسأل عن وثائق وكالة APIA..."):
         try:
             # تفعيل خاصية التدفق (Streaming)
             responses = client.models.generate_content_stream(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=all_files + [prompt],
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
