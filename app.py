@@ -4,67 +4,110 @@ from google.genai import types
 import glob
 import os
 
-# --- 1. الإعدادات ---
+# --- 1. إعدادات الأمان والمفتاح ---
 try:
+    # يحاول الكود جلب المفتاح بأي مسمى وضعته في الـ Secrets
     api_key = st.secrets.get("GEMINI_API_KEY") or st.secrets.get("SMART APIA API Key")
     client = genai.Client(api_key=api_key)
 except Exception:
-    st.error("تأكد من وجود API Key في Secrets.")
+    st.error("خطأ: لم يتم العثور على المفتاح. تأكد من إضافته في إعدادات Streamlit Secrets.")
     st.stop()
 
-# --- 2. واجهة التطبيق ---
-st.set_page_config(page_title="APIA Expert Pro", page_icon="🌱")
-st.markdown("<style>*{direction: RTL; text-align: right;}</style>", unsafe_allow_html=True)
-st.title("🤖 مساعد APIA الذكي")
+# --- 2. إعدادات الواجهة ودعم اللغة العربية (RTL) ---
+st.set_page_config(page_title="APIA Smart Expert", page_icon="🌱", layout="centered")
+st.markdown("""
+    <style>
+    /* تنسيق اتجاه النص والجداول لليمين */
+    [data-testid="stAppViewContainer"], [data-testid="stChatMessage"], [data-testid="stChatInput"] {
+        direction: RTL; text-align: right;
+    }
+    div[data-testid="stChatMessage"] { flex-direction: row-reverse; }
+    table { margin-left: auto; margin-right: 0; }
+    th, td { text-align: right !important; padding: 10px !important; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# --- 3. رفع الملفات مرة واحدة (السرعة) ---
+st.title("🤖 مساعد APIA الذكي (نسخة الاحتراف)")
+
+# --- 3. تعليمات النظام (لضمان الجداول والدقة) ---
+SYSTEM_PROMPT = """أنت "المساعد الرقمي الرسمي لوكالة APIA".
+مهمتك: الإجابة بدقة من الملفات المرفقة فقط.
+القوانين الصارمة:
+1. الجداول: أي مقارنة أو أرقام يجب وضعها في جدول Markdown منظم.
+2. الذاكرة: تذكر سياق المحادثة كاملاً وأجب بناءً على الأسئلة السابقة.
+3. المصدر: إذا لم تجد المعلومة في الملفات، قل بوضوح أنها غير متوفرة ووجه المستخدم لـ kouki.riadh@apia.com.tn.
+4. التنسيق: استخدم الخط العريض للعناوين والنقاط لتسهيل القراءة.
+"""
+
+# --- 4. معالجة الملفات لمرة واحدة (السرعة) ---
 @st.cache_resource
-def load_docs_once():
-    pdfs = glob.glob("*.pdf")
-    return [client.files.upload(file=f) for f in pdfs] if pdfs else []
+def prepare_knowledge_base():
+    # البحث عن جميع ملفات PDF في المجلد
+    pdf_files = glob.glob("*.pdf")
+    if not pdf_files:
+        return []
+    
+    uploaded_files = []
+    for f_path in pdf_files:
+        try:
+            with st.spinner(f"جاري تحليل المرجع: {f_path}..."):
+                # رفع الملف لمنصة جوجل
+                u_file = client.files.upload(file=f_path)
+                uploaded_files.append(u_file)
+        except Exception as e:
+            st.error(f"فشل في معالجة {f_path}: {e}")
+    return uploaded_files
 
-all_files = load_docs_once()
+# تنفيذ الرفع التلقائي
+knowledge_base = prepare_knowledge_base()
 
-# --- 4. إدارة الجلسة (الذاكرة القوية) ---
-# هذا الجزء هو المسؤول عن عدم نسيان الأسئلة السابقة
+# --- 5. إدارة جلسة المحادثة (الذاكرة) ---
 if "chat_session" not in st.session_state:
+    # إنشاء جلسة دردشة مستمرة لا تنسى
     st.session_state.chat_session = client.chats.create(
         model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
-            system_instruction="أنت خبير وكالة APIA. أجب من الملفات وتذكر كل ما قاله المستخدم سابقاً.",
-            temperature=0.0
+            system_instruction=SYSTEM_PROMPT,
+            temperature=0.0 # دقة وحرفية عالية
         )
     )
-if "history" not in st.session_state:
-    st.session_state.history = []
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# عرض المحادثة السابقة
-for msg in st.session_state.history:
+# عرض تاريخ المحادثة
+for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# --- 5. التنفيذ الذكي ---
-if prompt := st.chat_input("اسألني عن أي تفصيل..."):
-    st.session_state.history.append({"role": "user", "content": prompt})
+# --- 6. منطق الاستجابة (Streaming + Memory) ---
+if prompt := st.chat_input("اسألني عن أي تفصيل في وثائق APIA..."):
+    # إضافة سؤال المستخدم
+    st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
         placeholder = st.empty()
-        full_res = ""
+        full_response = ""
         
         try:
-            # نرسل الملفات في أول رسالة فقط، الموديل سيحفظها في الجلسة (Session)
-            content = all_files + [prompt] if len(st.session_state.history) <= 1 else prompt
+            # في أول رسالة فقط، نرسل الملفات كـ "سياق". في الرسائل التالية، الموديل يتذكرها تلقائياً.
+            is_first_interaction = len(st.session_state.messages) <= 1
+            input_data = knowledge_base + [prompt] if is_first_interaction else prompt
             
-            # استخدام message بدلاً من msg لتجنب الخطأ السابق
-            responses = st.session_state.chat_session.send_message_stream(message=content)
+            # تنفيذ الطلب بنظام التدفق (Streaming)
+            responses = st.session_state.chat_session.send_message_stream(
+                message=input_data
+            )
             
             for chunk in responses:
-                full_res += chunk.text
-                placeholder.markdown(full_res + "▌")
+                full_response += chunk.text
+                # تحديث النص كلمة بكلمة مع مؤشر كتابة
+                placeholder.markdown(full_response + "▌")
             
-            placeholder.markdown(full_res)
-            st.session_state.history.append({"role": "assistant", "content": full_res})
+            # عرض النص النهائي (بدون المؤشر) لضمان ظهور الجداول بشكل سليم
+            placeholder.markdown(full_response)
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            
         except Exception as e:
-            st.error(f"حدث خطأ: {e}")
+            st.error(f"عذراً، حدث خطأ تقني: {e}")
