@@ -61,7 +61,7 @@ for m in st.session_state.messages:
 if "chat_session" not in st.session_state:
     # نبدأ جلسة جديدة ونرسل الملفات كـ "سياق أساسي" لمرة واحدة
     st.session_state.chat_session = client.chats.create(
-        model="gemini-2.0-flash",
+        model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
             temperature=0.0
