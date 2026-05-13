@@ -44,7 +44,7 @@ st.markdown("""
         /* تم تغيير اللون هنا من الأخضر الداكن إلى الأسود الرمادي */
         background-color: #1a1a1a !important; 
         color: white !important;
-        border: 1px solid #d4b661 !important; /* حد ذهبي صريح */
+        border: 1px solid #0a1a12 !important; /* حد ذهبي صريح */
         border-radius: 12px !important;
     }
 
