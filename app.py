@@ -10,66 +10,55 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة لفرض المظهر الداكن والشفاف ---
+# --- 2. تخصيص الواجهة لفرض الشفافية الكاملة وتصحيح الألوان ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
-# إضافة CSS قسري لإلغاء أي ألوان افتراضية (أسود أو أزرق)
-st.markdown(f"""
+st.markdown("""
     <style>
-    /* إلغاء خلفية التطبيق بالكامل */
-    .stApp {{
+    /* 1. إخفاء أي خلفيات بيضاء أو رمادية افتراضية */
+    .stApp, .main, .block-container, [data-testid="stHeader"] {
         background: transparent !important;
-    }}
+        background-color: transparent !important;
+    }
 
-    /* استهداف حاوية الرسائل لإزالة اللون الأزرق والأسود */
-    [data-testid="stChatMessage"], .stChatMessage {{
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    /* 2. تصميم "البطاقة الزجاجية" للنص الترحيبي (بديل st.info الأزرق) */
+    .welcome-card {
+        background: rgba(255, 255, 255, 0.07) !important;
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
+        border: 1px solid rgba(212, 182, 97, 0.3) !important;
         border-radius: 20px !important;
-        margin-bottom: 15px !important;
-    }}
-
-    /* إجبار صندوق st.info (الرسالة الترحيبية) على التخلي عن اللون الأزرق */
-    div[data-testid="stNotification"] {{
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid #d4b661 !important; /* حدود ذهبية لتمييزها */
+        padding: 25px !important;
         color: white !important;
-        border-radius: 20px !important;
-    }}
-    
-    /* منع أي خلفية سوداء تظهر عند التحميل */
-    .main, .block-container {{
-        background: transparent !important;
-    }}
-
-    /* توحيد ألوان النصوص (أبيض ناصع) */
-    h1, h2, h3, p, li, span, div, label {{
-        color: #ffffff !important;
+        margin-bottom: 30px !important;
+        direction: rtl !important;
         text-align: right !important;
-        direction: RTL !important;
-    }}
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    }
 
-    /* تحويل كل الأيقونات الزرقاء إلى ذهبية */
-    svg, [data-testid="stIcon"] {{
-        fill: #d4b661 !important;
-        color: #d4b661 !important;
-    }}
-
-    /* تنسيق صندوق الإدخال السفلي */
-    .stChatInput textarea {{
-        background-color: rgba(10, 40, 30, 0.9) !important;
+    /* 3. تصحيح نافذة السؤال (Input Box) لتبرز عن خلفية الصفحة */
+    [data-testid="stChatInput"] {
+        background-color: transparent !important;
+    }
+    .stChatInput textarea {
+        background-color: rgba(18, 42, 30, 0.95) !important; /* لون أخضر داكن جداً وواضح */
         color: white !important;
-        border: 1px solid #d4b661 !important;
-    }}
+        border: 1px solid #d4b661 !important; /* حد ذهبي صريح */
+        border-radius: 12px !important;
+    }
+
+    /* 4. إجبار كافة النصوص على اللون الأبيض وRTL */
+    .stMarkdown, p, span, div {
+        color: #ffffff !important;
+        direction: RTL !important;
+        text-align: right !important;
+    }
+
+    /* تغيير لون الأيقونات للذهبي لمنع أي ظهور للأزرق */
+    svg { fill: #d4b661 !important; }
     
     /* تنسيق الروابط */
-    a {{
-        color: #d4b661 !important;
-        text-decoration: none !important;
-        font-weight: bold !important;
-    }}
+    a { color: #d4b661 !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -92,21 +81,23 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- النص الترحيبي الكامل ---
+# --- النص الترحيبي (باستخدام HTML صرف لضمان ثبات اللون) ---
 if not st.session_state.messages:
-    full_welcome_text = """
-    مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية المطوّر اعتماداً على تقنيات الذكاء الاصطناعي.
-    أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات وغيرها، وذلك بالاستناد حصريا إلى وثائق وتقارير مفتوحة ومنشورة للعموم على موقع الوكالة.
-    
-    تنبيه:
-    * هذه الخدمة للإرشاد العام وقد تقع بعض الالتباس. يُرجى التثبت من الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر kouki.riadh@apia.com.tn.
-    * يرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).
-    * لا يتم تسجيل أو تخزين أو استعمال محتوى المحادثة لتدريب نماذج الذكاء الاصطناعي.
-    * لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.
-    
-    كيف يمكنني مساعدتكم اليوم؟
-    """
-    st.info(full_welcome_text)
+    st.markdown("""
+    <div class="welcome-card">
+        مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية المطوّر اعتماداً على تقنيات الذكاء الاصطناعي.
+        أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات وغيرها، وذلك بالاستناد حصرياً إلى وثائق وتقارير مفتوحة ومنشورة للعموم على موقع الوكالة.
+        <br><br>
+        <strong>تنبيه:</strong>
+        <ul style="list-style-type: disc; padding-right: 20px;">
+            <li>هذه الخدمة للإرشاد العام وقد يقع بعض الالتباس. يُرجى التثبت من الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر kouki.riadh@apia.com.tn.</li>
+            <li>يرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).</li>
+            <li>لا يتم تسجيل أو تخزين أو استعمال محتوى المحادثة لتدريب نماذج الذكاء الاصطناعي.</li>
+            <li>لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.</li>
+        </ul>
+        كيف يمكنني مساعدتكم اليوم؟
+    </div>
+    """, unsafe_allow_html=True)
 
 # عرض المحادثة
 for m in st.session_state.messages:
