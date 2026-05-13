@@ -110,7 +110,7 @@ for m in st.session_state.messages:
     with st.chat_message(m["role"]): st.markdown(m["content"])
 
 # --- 5. التنفيذ بالتدفق ---
-if prompt := st.chat_input("اسألني عن الاستثمار الفلاحي..."):
+if prompt := st.chat_input("اطرح استفسارك هنا بخصوص الاستثمار الفلاحي..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"): st.markdown(prompt)
 
