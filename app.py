@@ -89,7 +89,7 @@ if "chat" not in st.session_state:
     # تم ضبط الموديل بناءً على تجارب Google AI Studio
     model = genai.GenerativeModel(
         model_name="gemini-2.5-flash",
-        system_instruction="أنت خبير وكالة APIA. أجب بدقة من الملفات المرفقة واستخدم الجداول للأرقام."
+        system_instruction="أنت خبير وكالة النهوض بالاستثمارات الفلاحية التونسية. أجب بدقة من الملفات المرفقة واستخدم الجداول للأرقام."
     )
     st.session_state.chat = model.start_chat(history=[])
     st.session_state.messages = []
@@ -99,7 +99,7 @@ for m in st.session_state.messages:
     with st.chat_message(m["role"]): st.markdown(m["content"])
 
 # --- 5. التنفيذ بالتدفق (Python Streaming) ---
-if prompt := st.chat_input("اسألني أي شيء عن الاستثمار الفلاحي..."):
+if prompt := st.chat_input("اطرح سؤالك هنا..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"): st.markdown(prompt)
 
