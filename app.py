@@ -10,7 +10,7 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة (الحل النهائي للإطار الأحمر والاتجاه) ---
+# --- 2. تخصيص الواجهة (إصلاح اتجاه الأيقونات والنصوص) ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown("""
@@ -34,9 +34,22 @@ st.markdown("""
         text-align: right !important;
     }
 
+    /* --- إصلاح اتجاه الأيقونات (الصور الرمزية) في الدردشة --- */
+    [data-testid="stChatMessage"] {
+        flex-direction: row-reverse !important; /* إجبار الأيقونة على اليمين والنص بجانبها */
+        text-align: right !important;
+        direction: rtl !important;
+    }
+
+    /* تحسين شكل رسالة الدردشة لتناسب النمط الزجاجي */
+    [data-testid="stChatMessageContent"] {
+        background: transparent !important;
+        margin-right: 10px !important;
+    }
+
     /* --- الحل الجذري لصندوق السؤال --- */
     
-    /* 1. حذف الإطار الأحمر تماماً (حتى عند التركيز) */
+    /* حذف الإطار الأحمر تماماً */
     [data-testid="stChatInput"] {
         border: none !important;
         box-shadow: none !important;
@@ -44,30 +57,22 @@ st.markdown("""
         background: transparent !important;
     }
 
-    /* 2. تنسيق منطقة الكتابة وفرض الاتجاه من اليمين لليسار */
+    /* تنسيق منطقة الكتابة وفرض الاتجاه العربي */
     .stChatInput textarea {
         background-color: rgba(255, 255, 255, 0.05) !important;
         color: white !important;
         border: 1px solid rgba(212, 182, 97, 0.4) !important;
         border-radius: 15px !important;
-        
-        /* فرض الاتجاه العربي */
         direction: rtl !important;
         text-align: right !important;
         unicode-bidi: bidi-override !important; 
     }
 
-    /* 3. التأكد من اختفاء الأحمر عند النقر (Focus) */
+    /* التأكد من اختفاء الأحمر عند النقر (Focus) */
     .stChatInput textarea:focus {
         box-shadow: none !important;
         outline: none !important;
-        border: 1px solid #d4b661 !important; /* تحويله لذهبي ثابت */
-    }
-
-    /* إخفاء أي عناصر تجميلية حمراء تظهر تلقائياً */
-    .stChatInput > div {
-        border: none !important;
-        box-shadow: none !important;
+        border: 1px solid #d4b661 !important;
     }
 
     /* توحيد نصوص المحادثة */
@@ -111,7 +116,7 @@ if not st.session_state.messages:
         <strong>تنبيه:</strong>
         <ul style="list-style-type: disc; padding-right: 20px; margin-top: 10px;">
             <li>هذه الخدمة للإرشاد العام وقد يقع بعض الالتباس. يُرجى التثبت من الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر kouki.riadh@apia.com.tn.</li>
-            <li>يرجى عدم إدخال أي بيانات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).</li>
+            <li>يرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).</li>
             <li>لا يتم تسجيل أو تخزين أو استعمال محتوى المحادثة لتدريب نماذج الذكاء الاصطناعي.</li>
             <li>لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.</li>
         </ul>
