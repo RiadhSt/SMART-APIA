@@ -101,7 +101,7 @@ if not st.session_state.messages:
             <li>لا يتم تسجيل أو تخزين أو استعمال محتوى المحادثة لتدريب نماذج الذكاء الاصطناعي.</li>
             <li>لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.</li>
         </ul>
-       
+       <br>
             <span class="highlight-yellow">          كيف يمكنني مساعدتكم اليوم؟</span>    </div>
     """, unsafe_allow_html=True)
 
