@@ -13,7 +13,7 @@ genai.configure(api_key=api_key)
 # --- 2. الواجهة (RTL) ---
 st.set_page_config(page_title="APIA Expert", layout="centered")
 st.markdown("<style>*{direction: RTL; text-align: right;}</style>", unsafe_allow_html=True)
-st.title("🤖 مساعد APIA الذكي")
+#st.title("🤖 مساعد APIA الذكي")
 
 # --- 3. الملفات (الرفع لمرة واحدة) ---
 @st.cache_resource
