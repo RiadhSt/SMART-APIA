@@ -10,66 +10,65 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة لفرض المظهر الداكن والشفاف (Fix for image_2d9371.png) ---
+# --- 2. تخصيص الواجهة لفرض المظهر الداكن والشفاف ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
+# إضافة CSS قسري لإلغاء أي ألوان افتراضية (أسود أو أزرق)
 st.markdown(f"""
     <style>
-    /* 1. تنظيف شامل وفرض الشفافية على كل الخلفيات لمنع تحولها للأسود */
-    .stApp, .main, .block-container, [data-testid="stHeader"], [data-testid="stToolbar"] {{
+    /* إلغاء خلفية التطبيق بالكامل */
+    .stApp {{
         background: transparent !important;
-        background-color: transparent !important;
     }}
 
-    /* 2. فرض مظهر البطاقات الزجاجية الاحترافي */
-    :root {{
-        --gold: #d4b661;
-        --glass-bg: rgba(255, 255, 255, 0.08); /* درجة شفافة متوازنة */
-        --glass-border: rgba(255, 255, 255, 0.15);
-    }}
-
-    /* تنسيق صناديق التنبيه والرسائل لمنع اللون الأزرق الافتراضي */
-    div[data-testid="stNotification"], [data-testid="stChatMessage"], .stAlert {{
-        background: var(--glass-bg) !important;
-        background-color: var(--glass-bg) !important;
-        backdrop-filter: blur(15px) !important;
-        -webkit-backdrop-filter: blur(15px) !important;
-        border: 1px solid var(--glass-border) !important;
+    /* استهداف حاوية الرسائل لإزالة اللون الأزرق والأسود */
+    [data-testid="stChatMessage"], .stChatMessage {{
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 20px !important;
-        color: white !important;
-        max-width: 100% !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+        margin-bottom: 15px !important;
     }}
 
-    /* 3. تصحيح ألوان النصوص لضمان الوضوح التام */
-    .stMarkdown, p, h1, h2, h3, li, span, label, div {{
+    /* إجبار صندوق st.info (الرسالة الترحيبية) على التخلي عن اللون الأزرق */
+    div[data-testid="stNotification"] {{
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid #d4b661 !important; /* حدود ذهبية لتمييزها */
+        color: white !important;
+        border-radius: 20px !important;
+    }}
+    
+    /* منع أي خلفية سوداء تظهر عند التحميل */
+    .main, .block-container {{
+        background: transparent !important;
+    }}
+
+    /* توحيد ألوان النصوص (أبيض ناصع) */
+    h1, h2, h3, p, li, span, div, label {{
         color: #ffffff !important;
-        direction: RTL !important;
         text-align: right !important;
-        text-shadow: 1px 1px 3px rgba(0,0,0,0.4) !important;
+        direction: RTL !important;
     }}
 
-    /* 4. تنسيق حقل الإدخال السفلي (Input Box) وتثبيت ألوانه */
-    [data-testid="stChatInput"] {{
-        background-color: transparent !important;
+    /* تحويل كل الأيقونات الزرقاء إلى ذهبية */
+    svg, [data-testid="stIcon"] {{
+        fill: #d4b661 !important;
+        color: #d4b661 !important;
     }}
+
+    /* تنسيق صندوق الإدخال السفلي */
     .stChatInput textarea {{
-        background-color: rgba(18, 42, 30, 0.85) !important;
+        background-color: rgba(10, 40, 30, 0.9) !important;
         color: white !important;
-        border: 1px solid var(--gold) !important;
-        border-radius: 15px !important;
-    }}
-
-    /* تثبيت لون الأيقونات بالذهبي ومنع اللون الأزرق */
-    svg {{
-        fill: var(--gold) !important;
+        border: 1px solid #d4b661 !important;
     }}
     
     /* تنسيق الروابط */
     a {{
-        color: var(--gold) !important;
+        color: #d4b661 !important;
+        text-decoration: none !important;
         font-weight: bold !important;
-        text-decoration: underline !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -93,7 +92,7 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- النص الترحيبي الكامل (الثابت والواضح) ---
+# --- النص الترحيبي الكامل ---
 if not st.session_state.messages:
     full_welcome_text = """
     مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية المطوّر اعتماداً على تقنيات الذكاء الاصطناعي.
