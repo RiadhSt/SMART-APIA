@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import glob
 
-# --- 1. الإعدادات ---
+# --- 1. الإعدادات المستمدة من Google AI Studio ---
 api_key = st.secrets.get("GEMINI_API_KEY") or st.secrets.get("SMART APIA API Key")
 if not api_key:
     st.error("API Key missing!")
@@ -10,96 +10,55 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة (الحل النهائي للأيقونات والألوان) ---
+# --- 2. تخصيص الواجهة لفرض الشفافية الكاملة وتصحيح الألوان ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown("""
     <style>
-    /* 1. تصفير الخلفيات */
-    .stApp, .main, .block-container {
+    /* 1. إخفاء أي خلفيات بيضاء أو رمادية افتراضية */
+    .stApp, .main, .block-container, [data-testid="stHeader"] {
         background: transparent !important;
-    }
-
-    /* 2. إجبار الأيقونات على اليمين واستعادة اللون الذهبي */
-    /* استهداف الحاوية الكبرى للرسالة */
-    [data-testid="stChatMessage"] {
-        display: flex !important;
-        flex-direction: row-reverse !important; /* الأيقونة يميناً */
-        text-align: right !important;
-        direction: rtl !important;
-        background: transparent !important;
-    }
-
-    /* استهداف الأيقونة (Avatar) وفرض لونها ومكانها */
-    [data-testid="stChatMessageAvatarUser"], 
-    [data-testid="stChatMessageAvatarAssistant"] {
-        order: 1 !important; /* التأكد من أنها العنصر الأول من اليمين */
-        margin-left: 15px !important;
-        margin-right: 0px !important;
-    }
-
-    /* تلوين الأيقونات بالذهبي */
-    [data-testid="stChatMessageAvatarUser"] svg, 
-    [data-testid="stChatMessageAvatarAssistant"] svg {
-        fill: #d4b661 !important;
-        color: #d4b661 !important;
-        width: 28px !important;
-        height: 28px !important;
-    }
-
-    /* استهداف نص الرسالة */
-    [data-testid="stChatMessageContent"] {
-        order: 2 !important;
-        flex-grow: 1 !important;
-        background: transparent !important;
-    }
-
-    /* 3. صندوق الأسئلة الممتاز (بدون إطارات حمراء أو رمادية) */
-    [data-testid="stChatInput"] {
         background-color: transparent !important;
-        border: none !important;
     }
 
-    .stChatInput textarea {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        color: white !important;
-        border: 1px solid rgba(212, 182, 97, 0.5) !important;
-        border-radius: 15px !important;
-        direction: rtl !important;
-        text-align: right !important;
-    }
-
-    .stChatInput textarea:focus {
-        border: 1px solid #d4b661 !important;
-        box-shadow: 0 0 10px rgba(212, 182, 97, 0.2) !important;
-        outline: none !important;
-    }
-
-    /* زر الإرسال */
-    [data-testid="stChatInputSubmitButton"] svg {
-        fill: #d4b661 !important;
-    }
-
-    /* البطاقة الترحيبية */
+    /* 2. تصميم "البطاقة الزجاجية" للنص الترحيبي (بديل st.info الأزرق) */
     .welcome-card {
         background: rgba(255, 255, 255, 0.07) !important;
         backdrop-filter: blur(15px) !important;
         -webkit-backdrop-filter: blur(15px) !important;
-        border: 1px solid rgba(212, 182, 97, 0.25) !important;
+        border: 1px solid rgba(212, 182, 97, 0.3) !important;
         border-radius: 20px !important;
         padding: 25px !important;
         color: white !important;
         margin-bottom: 30px !important;
         direction: rtl !important;
         text-align: right !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
     }
 
-    /* توحيد النصوص */
-    .stMarkdown, p, span, li {
+    /* 3. تصحيح نافذة السؤال (Input Box) لتبرز عن خلفية الصفحة */
+    [data-testid="stChatInput"] {
+        background-color: transparent !important;
+    }
+    .stChatInput textarea {
+        background-color: rgba(18, 42, 30, 0.95) !important; /* لون أخضر داكن جداً وواضح */
+        color: white !important;
+        border: 1px solid #d4b661 !important; /* حد ذهبي صريح */
+        border-radius: 12px !important;
+    }
+
+    /* 4. إجبار كافة النصوص على اللون الأبيض وRTL */
+    .stMarkdown, p, span, div {
         color: #ffffff !important;
         direction: RTL !important;
         text-align: right !important;
     }
+
+    /* تغيير لون الأيقونات للذهبي لمنع أي ظهور للأزرق */
+    svg { fill: #d4b661 !important; }
+    
+    /* تنسيق الروابط */
+    a { color: #d4b661 !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -122,7 +81,7 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- النص الترحيبي ---
+# --- النص الترحيبي (باستخدام HTML صرف لضمان ثبات اللون) ---
 if not st.session_state.messages:
     st.markdown("""
     <div class="welcome-card">
@@ -130,7 +89,7 @@ if not st.session_state.messages:
         أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات وغيرها، وذلك بالاستناد حصرياً إلى وثائق وتقارير مفتوحة ومنشورة للعموم على موقع الوكالة.
         <br><br>
         <strong>تنبيه:</strong>
-        <ul style="list-style-type: disc; padding-right: 20px; margin-top: 10px;">
+        <ul style="list-style-type: disc; padding-right: 20px;">
             <li>هذه الخدمة للإرشاد العام وقد يقع بعض الالتباس. يُرجى التثبت من الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر kouki.riadh@apia.com.tn.</li>
             <li>يرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).</li>
             <li>لا يتم تسجيل أو تخزين أو استعمال محتوى المحادثة لتدريب نماذج الذكاء الاصطناعي.</li>
