@@ -67,7 +67,7 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🤖 مساعد APIA الذكي")
+#st.title("🤖 مساعد APIA الذكي")
 
 # --- 3. إدارة الملفات ---
 @st.cache_resource
