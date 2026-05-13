@@ -10,64 +10,56 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة لتطابق ألوان موقعك (Visual Integration) ---
-st.set_page_config(page_title="APIA Expert", layout="centered")
+# --- 2. تخصيص الواجهة لتطابق ألوان موقعك وصورة image_2dfc50.png ---
+st.set_page_config(page_title="APIA Expert", layout="wide") # تم تغييرها إلى wide للسماح بعرض أكبر
 
 st.markdown(f"""
     <style>
-    /* تطبيق هوية الموقع البصرية بناءً على صورة الموقع image_39555e.jpg */
+    /* تطبيق هوية الموقع البصرية */
     :root {{
         --green-deep: #0a5c35;
         --gold: #d4b661;
         --text-primary: #ffffff;
     }}
 
-    /* جعل الخلفية شفافة تماماً وإزالة اللون الأزرق الافتراضي */
+    /* جعل الخلفية شفافة وإزالة اللون الأزرق الافتراضي */
     .stApp {{
         background: transparent;
         direction: RTL;
         text-align: right;
     }}
 
-    /* تصحيح شامل لجميع ألوان النصوص والأيقونات */
+    /* تكبير عرض الصندوق (التنبيه) ليملأ الصفحة */
+    div[data-testid="stNotification"] {{
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid var(--gold) !important;
+        color: white !important;
+        max-width: 100% !important; /* هذا السطر يقوم بتكبير العرض */
+        margin: 0 auto;
+    }}
+
+    /* تصحيح ألوان النصوص */
     .stMarkdown, p, h1, h2, h3, li, span, label {{
         color: var(--text-primary) !important;
         direction: RTL;
         text-align: right;
     }}
 
-    /* إزالة اللون الأزرق من صندوق التنبيه وجعله ذهبياً شفافاً */
-    div[data-testid="stNotification"] {{
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid var(--gold) !important;
-        color: white !important;
-    }}
-    
-    /* إخفاء أيقونات المعلومات الزرقاء الافتراضية */
-    div[data-testid="stNotification"] svg {{
-        fill: var(--gold) !important;
-    }}
-
-    /* تخصيص صناديق الدردشة لتكون زجاجية شفافة */
+    /* تخصيص صناديق الدردشة لتكون عريضة ومتناسقة */
     [data-testid="stChatMessage"] {{
         background-color: rgba(255, 255, 255, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 20px !important;
+        max-width: 100% !important;
     }}
 
-    /* تنسيق حقل الإدخال السفلي (إزالة الإطار الأزرق عند التركيز) */
+    /* تنسيق حقل الإدخال السفلي ليطابق صورة image_2dfc50.png */
     .stChatInput textarea {{
         background-color: rgba(18, 42, 30, 0.8) !important;
         color: white !important;
         border: 1px solid var(--gold) !important;
-        border-radius: 12px !important;
-    }}
-    .stChatInput textarea:focus {{
-        border: 1px solid var(--gold) !important;
-        box-shadow: 0 0 5px var(--gold) !important;
     }}
     
-    /* تنسيق الروابط والبريد الإلكتروني بالذهبي الصريح */
     a {{
         color: var(--gold) !important;
         text-decoration: underline !important;
@@ -75,7 +67,9 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. إدارة الملفات (Python RAG Logic) ---
+st.title("🤖 مساعد APIA الذكي")
+
+# --- 3. إدارة الملفات ---
 @st.cache_resource
 def upload_knowledge():
     files = glob.glob("*.pdf")
@@ -94,29 +88,26 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- النص الترحيبي الكامل كما ورد منك تماماً ---
+# --- النص الترحيبي الكامل مع تعديل العرض ---
 if not st.session_state.messages:
     full_welcome_text = """
     مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية المطوّر اعتماداً على تقنيات الذكاء الاصطناعي.
     أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات وغيرها، وذلك بالاستناد حصريا إلى وثائق وتقارير مفتوحة ومنشورة للعموم على موقع الوكالة.
     
     تنبيه:
-	
-    * هذه الخدمة للإرشاد العام وقد تقع بعض الأخطاء أو الالتباس. يُرجى التثبت من النصوص/الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر: [kouki.riadh@apia.com.tn](mailto:kouki.riadh@apia.com.tn).
-	
-    * يرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).
-	
-    * لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.
+    هذه الخدمة للإرشاد العام وقد تقع بعض الأخطاء أو الالتباس. يُرجى التثبت من النصوص/الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر: [kouki.riadh@apia.com.tn](mailto:kouki.riadh@apia.com.tn).
+    يُرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).
+    لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.
     
     كيف يمكنني مساعدتكم اليوم؟
     """
     st.info(full_welcome_text)
 
-# عرض تاريخ المحادثة
+# عرض المحادثة بالعرض الكامل
 for m in st.session_state.messages:
     with st.chat_message(m["role"]): st.markdown(m["content"])
 
-# --- 5. التنفيذ بالتدفق (Python Streaming) ---
+# --- 5. التنفيذ بالتدفق ---
 if prompt := st.chat_input("اسألني عن الاستثمار الفلاحي..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"): st.markdown(prompt)
@@ -124,8 +115,6 @@ if prompt := st.chat_input("اسألني عن الاستثمار الفلاحي.
     with st.chat_message("assistant"):
         is_first = len(st.session_state.messages) <= 1
         content = [prompt] + knowledge if (is_first and knowledge) else prompt
-        
         response = st.session_state.chat.send_message(content, stream=True)
         full_res = st.write_stream(chunk.text for chunk in response)
-        
         st.session_state.messages.append({"role": "assistant", "content": full_res})
