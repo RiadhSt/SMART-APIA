@@ -102,7 +102,7 @@ if not st.session_state.messages:
             <li>لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.</li>
         </ul>
         <br>
-        <span class="highlight-yellow">كيف يمكنني مساعدتكم اليوم؟</span>
+        <ul class="highlight-yellow">كيف يمكنني مساعدتكم اليوم؟</ul>
     </div>
     """, unsafe_allow_html=True)
 
