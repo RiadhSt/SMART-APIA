@@ -10,58 +10,54 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة (إعادة الألوان وموضع الأيقونات لليمين) ---
+# --- 2. تخصيص الواجهة (الحل النهائي للأيقونات والألوان) ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown("""
     <style>
-    /* إخفاء الخلفيات */
+    /* 1. تصفير الخلفيات */
     .stApp, .main, .block-container {
         background: transparent !important;
     }
 
-    /* --- إعادة الأيقونات لليمين وفرض اللون الذهبي --- */
-    /* استهداف حاوية الرسالة لتعمل بنظام Flex عكسي */
-    div[data-testid="stChatMessage"] {
-        flex-direction: row-reverse !important;
-        background: transparent !important;
+    /* 2. إجبار الأيقونات على اليمين واستعادة اللون الذهبي */
+    /* استهداف الحاوية الكبرى للرسالة */
+    [data-testid="stChatMessage"] {
+        display: flex !important;
+        flex-direction: row-reverse !important; /* الأيقونة يميناً */
+        text-align: right !important;
         direction: rtl !important;
+        background: transparent !important;
     }
 
-    /* استهداف الأيقونة مباشرة لفرض اللون الذهبي */
-    div[data-testid="stChatMessageAvatarUser"] svg, 
-    div[data-testid="stChatMessageAvatarAssistant"] svg,
-    div[data-testid="stChatMessageAvatarUser"] div, 
-    div[data-testid="stChatMessageAvatarAssistant"] div {
+    /* استهداف الأيقونة (Avatar) وفرض لونها ومكانها */
+    [data-testid="stChatMessageAvatarUser"], 
+    [data-testid="stChatMessageAvatarAssistant"] {
+        order: 1 !important; /* التأكد من أنها العنصر الأول من اليمين */
+        margin-left: 15px !important;
+        margin-right: 0px !important;
+    }
+
+    /* تلوين الأيقونات بالذهبي */
+    [data-testid="stChatMessageAvatarUser"] svg, 
+    [data-testid="stChatMessageAvatarAssistant"] svg {
         fill: #d4b661 !important;
         color: #d4b661 !important;
-        background-color: rgba(212, 182, 97, 0.1) !important;
-        border: 1px solid rgba(212, 182, 97, 0.5) !important;
+        width: 28px !important;
+        height: 28px !important;
     }
 
-    /* موازنة المسافات بعد قلب الاتجاه */
-    div[data-testid="stChatMessage"] {
-        padding-right: 0px !important;
-    }
-    
-    /* محتوى الرسالة */
-    div[data-testid="stChatMessageContent"] {
-        margin-right: 15px !important;
-        margin-left: 0px !important;
-        text-align: right !important;
+    /* استهداف نص الرسالة */
+    [data-testid="stChatMessageContent"] {
+        order: 2 !important;
+        flex-grow: 1 !important;
+        background: transparent !important;
     }
 
-    /* --- صندوق الأسئلة الممتاز (بدون إطار أحمر وبدون خلفية رمادية) --- */
+    /* 3. صندوق الأسئلة الممتاز (بدون إطارات حمراء أو رمادية) */
     [data-testid="stChatInput"] {
-        border: none !important;
-        box-shadow: none !important;
         background-color: transparent !important;
-    }
-    
-    [data-testid="stChatInput"] > div {
         border: none !important;
-        box-shadow: none !important;
-        background-color: transparent !important;
     }
 
     .stChatInput textarea {
@@ -71,7 +67,6 @@ st.markdown("""
         border-radius: 15px !important;
         direction: rtl !important;
         text-align: right !important;
-        box-shadow: none !important;
     }
 
     .stChatInput textarea:focus {
@@ -100,7 +95,7 @@ st.markdown("""
     }
 
     /* توحيد النصوص */
-    .stMarkdown, p, span {
+    .stMarkdown, p, span, li {
         color: #ffffff !important;
         direction: RTL !important;
         text-align: right !important;
