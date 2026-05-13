@@ -26,7 +26,7 @@ knowledge = upload_knowledge()
 # --- 4. المحادثة والذاكرة ---
 if "chat" not in st.session_state:
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.5-flash",
         system_instruction="أنت خبير وكالة APIA. أجب بدقة من الملفات المرفقة واستخدم الجداول للأرقام."
     )
     st.session_state.chat = model.start_chat(history=[])
