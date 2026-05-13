@@ -10,11 +10,17 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة لتطابق ألوان موقعك وصورة image_2dfc50.png ---
-st.set_page_config(page_title="APIA Expert", layout="wide") # تم تغييرها إلى wide للسماح بعرض أكبر
+# --- 2. تخصيص الواجهة لتثبيت الألوان ومنع اللون الأسود والأزرق ---
+st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown(f"""
     <style>
+    /* فرض الخلفية الشفافة على كل المستويات لمنع اللون الأسود */
+    .stApp, .main, .block-container {{
+        background: transparent !important;
+        background-color: transparent !important;
+    }}
+
     /* تطبيق هوية الموقع البصرية بناءً على صورة image_2df433.jpg */
     :root {{
         --green-deep: #0a5c35;
@@ -25,53 +31,49 @@ st.markdown(f"""
         --radius: 20px;
     }}
 
-    /* جعل الخلفية شفافة وإزالة اللون الأزرق الافتراضي */
-    .stApp {{
-        background: transparent;
-        direction: RTL;
-        text-align: right;
-    }}
-
-    /* تحويل الصناديق إلى نمط البطاقات الزجاجية (Glassmorphism) */
-    div[data-testid="stNotification"], [data-testid="stChatMessage"] {{
+    /* منع اللون الأزرق والأسود في صناديق التنبيه والدردشة */
+    div[data-testid="stNotification"], [data-testid="stChatMessage"], .stAlert {{
         background: var(--glass-bg) !important;
-        backdrop-filter: blur(12px) !important; /* تأثير الضبابية الزجاجي */
+        background-color: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important;
         -webkit-backdrop-filter: blur(12px) !important;
         border: 1px solid var(--glass-border) !important;
         border-radius: var(--radius) !important;
         color: white !important;
         max-width: 100% !important;
-        margin-bottom: 20px !important;
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
     }}
 
-    /* تصحيح ألوان النصوص */
+    /* إخفاء أي خلفيات زرقاء افتراضية للنصوص */
     .stMarkdown, p, h1, h2, h3, li, span, label {{
         color: var(--text-primary) !important;
-        direction: RTL;
-        text-align: right;
+        direction: RTL !important;
+        text-align: right !important;
     }}
 
-    /* إخفاء الأيقونات الزرقاء وجعلها ذهبية لتناسب الهوية */
-    div[data-testid="stNotification"] svg {{
+    /* تغيير لون أيقونات التنبيه من الأزرق إلى الذهبي */
+    svg {{
         fill: var(--gold) !important;
     }}
 
-    /* تنسيق حقل الإدخال السفلي ليطابق صورة image_2dfc50.png */
+    /* تنسيق حقل الإدخال السفلي ومنع الإطار الأزرق عند الكتابة */
     .stChatInput textarea {{
         background-color: rgba(18, 42, 30, 0.8) !important;
         color: white !important;
         border: 1px solid var(--gold) !important;
     }}
+    .stChatInput textarea:focus {{
+        border: 1px solid var(--gold) !important;
+        box-shadow: 0 0 5px var(--gold) !important;
+    }}
     
+    /* تنسيق الروابط بالذهبي */
     a {{
         color: var(--gold) !important;
         text-decoration: underline !important;
     }}
     </style>
     """, unsafe_allow_html=True)
-
-#st.title("🤖 مساعد APIA الذكي")
 
 # --- 3. إدارة الملفات ---
 @st.cache_resource
@@ -92,7 +94,7 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- النص الترحيبي الكامل مع تعديل العرض ---
+# --- النص الترحيبي الكامل الثابت ---
 if not st.session_state.messages:
     full_welcome_text = """
     مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية المطوّر اعتماداً على تقنيات الذكاء الاصطناعي.
@@ -107,7 +109,7 @@ if not st.session_state.messages:
     """
     st.info(full_welcome_text)
 
-# عرض المحادثة بالعرض الكامل
+# عرض المحادثة
 for m in st.session_state.messages:
     with st.chat_message(m["role"]): st.markdown(m["content"])
 
