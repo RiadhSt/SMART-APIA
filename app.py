@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import glob
 
-# --- 1. الإعدادات المستمدة من Google AI Studio ---
+# --- 1. الإعدادات ---
 api_key = st.secrets.get("GEMINI_API_KEY") or st.secrets.get("SMART APIA API Key")
 if not api_key:
     st.error("API Key missing!")
@@ -10,17 +10,17 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة (إلغاء الإطار الأحمر والخلفية الرمادية) ---
+# --- 2. تخصيص الواجهة (الحل النهائي للإطار الأحمر والاتجاه) ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown("""
     <style>
-    /* 1. تنظيف شامل للخلفيات */
+    /* إخفاء الخلفيات الافتراضية */
     .stApp, .main, .block-container {
         background: transparent !important;
     }
 
-    /* 2. تصميم البطاقة الترحيبية الزجاجية */
+    /* تصميم البطاقة الترحيبية الزجاجية */
     .welcome-card {
         background: rgba(255, 255, 255, 0.07) !important;
         backdrop-filter: blur(15px) !important;
@@ -34,40 +34,50 @@ st.markdown("""
         text-align: right !important;
     }
 
-    /* 3. حل جذري لصندوق السؤال (إزالة الأحمر والرمادي) */
-    /* استهداف الحاوية الخارجية لإلغاء أي إطار أحمر */
+    /* --- الحل الجذري لصندوق السؤال --- */
+    
+    /* 1. حذف الإطار الأحمر تماماً (حتى عند التركيز) */
     [data-testid="stChatInput"] {
         border: none !important;
-        background-color: transparent !important;
         box-shadow: none !important;
-    }
-
-    /* استهداف منطقة الكتابة الفعلية */
-    .stChatInput textarea {
-        background-color: rgba(255, 255, 255, 0.05) !important; /* خلفية زجاجية خفيفة جداً */
-        color: white !important;
-        border: 1px solid rgba(212, 182, 97, 0.4) !important; /* إطار ذهبي نحيف */
-        border-radius: 15px !important;
-        box-shadow: none !important;
-    }
-
-    /* إزالة الإطار الأحمر عند النقر أو التركيز (Focus) */
-    .stChatInput textarea:focus {
-        border: 1px solid #d4b661 !important; /* تحويله لذهبي ثابت عند التركيز */
         outline: none !important;
-        box-shadow: 0 0 10px rgba(212, 182, 97, 0.2) !important;
+        background: transparent !important;
     }
 
-    /* 4. توحيد نصوص المحادثة */
+    /* 2. تنسيق منطقة الكتابة وفرض الاتجاه من اليمين لليسار */
+    .stChatInput textarea {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: white !important;
+        border: 1px solid rgba(212, 182, 97, 0.4) !important;
+        border-radius: 15px !important;
+        
+        /* فرض الاتجاه العربي */
+        direction: rtl !important;
+        text-align: right !important;
+        unicode-bidi: bidi-override !important; 
+    }
+
+    /* 3. التأكد من اختفاء الأحمر عند النقر (Focus) */
+    .stChatInput textarea:focus {
+        box-shadow: none !important;
+        outline: none !important;
+        border: 1px solid #d4b661 !important; /* تحويله لذهبي ثابت */
+    }
+
+    /* إخفاء أي عناصر تجميلية حمراء تظهر تلقائياً */
+    .stChatInput > div {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* توحيد نصوص المحادثة */
     .stMarkdown, p, span {
         color: #ffffff !important;
         direction: RTL !important;
         text-align: right !important;
     }
 
-    /* أيقونات ذهبية */
     svg { fill: #d4b661 !important; }
-    
     a { color: #d4b661 !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -91,7 +101,7 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- عرض النص الترحيبي بنمط البطاقة الزجاجية ---
+# --- النص الترحيبي ---
 if not st.session_state.messages:
     st.markdown("""
     <div class="welcome-card">
