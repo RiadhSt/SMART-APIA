@@ -10,70 +10,65 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة لتطابق ألوان موقعك (Visual Integration) ---
+# --- 2. تخصيص الواجهة لتطابق صورة الموقع image_39555e.jpg ---
 st.set_page_config(page_title="APIA Expert", layout="centered")
 
 st.markdown(f"""
     <style>
-    /* تطبيق هوية الموقع البصرية */
+    /* تطبيق هوية الموقع البصرية بناءً على لوحة الألوان المقدمة */
     :root {{
         --green-deep: #0a5c35;
         --gold: #d4b661;
-        --cream: #fbf9f4;
-        --dark: #122a1e;
+        --text-primary: #ffffff;
+        --glass-bg: rgba(255, 255, 255, 0.05);
     }}
 
-    /* خلفية التطبيق العامة */
+    /* جعل الخلفية شفافة لتندمج مع تصميم الموقع المدمج */
     .stApp {{
-        background-color: var(--dark);
+        background: transparent;
         direction: RTL;
         text-align: right;
     }}
 
-    /* تنسيق نصوص الرسائل */
-    .stMarkdown, p, h1, h2, h3 {{
+    /* تصحيح ألوان النصوص لتصبح واضحة جداً */
+    .stMarkdown, p, h1, h2, h3, li {{
+        color: var(--text-primary) !important;
+        direction: RTL;
+        text-align: right;
+        font-weight: 400;
+    }}
+
+    /* تنسيق صندوق التنبيه ليكون شفافاً بحدود ذهبية (كما في الصورة) */
+    .stAlert {{
+        background-color: var(--glass-bg) !important;
+        border: 1px solid var(--gold) !important;
         color: white !important;
-        direction: RTL;
-        text-align: right;
+        border-radius: 15px;
     }}
 
-    /* تخصيص صناديق الدردشة */
+    /* تخصيص صناديق الدردشة لتكون زجاجية */
     [data-testid="stChatMessage"] {{
-        background-color: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 20px;
-        margin-bottom: 10px;
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 20px !important;
     }}
 
-    /* تخصيص حقل الإدخال */
+    /* تحسين مظهر حقل الإدخال السفلي */
     .stChatInput textarea {{
-        background-color: #1b3a29 !important;
+        background-color: rgba(18, 42, 30, 0.8) !important;
         color: white !important;
         border: 1px solid var(--gold) !important;
+        border-radius: 12px !important;
     }}
-
-    /* تنسيق الجداول لتناسب أسلوب الاستشارات */
-    table {{
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-        background-color: rgba(255,255,255,0.05);
-    }}
-    th {{
-        background-color: var(--green-deep);
+    
+    /* تنسيق الروابط لتكون باللون الذهبي الواضح */
+    a {{
         color: var(--gold) !important;
-        padding: 12px;
-        border: 1px solid var(--gold);
-    }}
-    td {{
-        padding: 10px;
-        border: 1px solid rgba(212, 182, 97, 0.3);
-        color: white;
+        text-decoration: none;
+        font-weight: bold;
     }}
     </style>
     """, unsafe_allow_html=True)
-
-#st.title("🤖 مساعد APIA الذكي")
 
 # --- 3. إدارة الملفات (Python RAG Logic) ---
 @st.cache_resource
@@ -83,7 +78,7 @@ def upload_knowledge():
 
 knowledge = upload_knowledge()
 
-# --- 4. محرك Gemini 2.5 Flash والذاكرة المستمرة ---
+# --- 4. محرك Gemini والذاكرة المستمرة ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -94,17 +89,17 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- إضافة النص الترحيبي وسياسة الخصوصية ---
+# --- النص الترحيبي المحسن بصرياً بناءً على صورة الموقع ---
 if not st.session_state.messages:
     welcome_text = """
-    مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية المطوّر اعتماداً على تقنيات الذكاء الاصطناعي.
-    أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات وغيرها، وذلك بالاستناد حصرياً إلى وثائق وتقارير مفتوحة ومنشورة للعموم على موقع الوكالة.
+    **مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية**
     
-    **تنبيه:**
-    * هذه الخدمة للإرشاد العام وقد تقع بعض الأخطاء أو الالتباس. يُرجى التثبت من النصوص/الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر: [kouki.riadh@apia.com.tn](mailto:kouki.riadh@apia.com.tn).
-    * لا يتم أبدا تسجيل المحادثات أو استعمالها لتدريب نماذج الذكاء الاصطناعي.
-    * يُرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، إلخ).
-    * لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.
+    أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات، وذلك بالاستناد حصرياً إلى وثائق وتقارير الوكالة المنشورة.
+    
+    ⚠️ **تنبيه هام:**
+    * هذه الخدمة للإرشاد العام؛ يُرجى التثبت من النصوص الأصلية.
+    * للتواصل الرسمي: [kouki.riadh@apia.com.tn](mailto:kouki.riadh@apia.com.tn).
+    * يُرجى عدم إدخال أي بيانات شخصية (رقم تعريف، هاتف، إلخ).
     
     **كيف يمكنني مساعدتكم اليوم؟**
     """
@@ -115,7 +110,7 @@ for m in st.session_state.messages:
     with st.chat_message(m["role"]): st.markdown(m["content"])
 
 # --- 5. التنفيذ بالتدفق (Python Streaming) ---
-if prompt := st.chat_input("اسألني أي شيء عن الاستثمار الفلاحي..."):
+if prompt := st.chat_input("اسألني عن الاستثمار الفلاحي..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"): st.markdown(prompt)
 
