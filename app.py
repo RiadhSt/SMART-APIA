@@ -60,6 +60,10 @@ st.markdown("""
     
     /* تنسيق الروابط */
     a { color: #d4b661 !important; font-weight: bold; }
+    .highlight-yellow {
+    color: #fffd01 !important; /* أصفر صريح وواضح */
+    font-weight: bold !important;
+}
     </style>
     """, unsafe_allow_html=True)
 
@@ -83,20 +87,22 @@ if "chat" not in st.session_state:
     st.session_state.chat = model.start_chat(history=[])
 
 # --- النص الترحيبي (باستخدام HTML صرف لضمان ثبات اللون) ---
+# --- النص الترحيبي المحدث ---
 if not st.session_state.messages:
     st.markdown("""
     <div class="welcome-card">
         مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية المطوّر اعتماداً على تقنيات الذكاء الاصطناعي.
         أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات وغيرها، وذلك بالاستناد حصرياً إلى وثائق وتقارير مفتوحة ومنشورة للعموم على موقع الوكالة.
         <br><br>
-        <strong>تنبيه:</strong>
+        <strong class="highlight-yellow">تنبيه:</strong>
         <ul style="list-style-type: disc; padding-right: 20px;">
             <li>هذه الخدمة للإرشاد العام وقد يقع بعض الالتباس. يُرجى التثبت من الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر kouki.riadh@apia.com.tn.</li>
             <li>يرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).</li>
             <li>لا يتم تسجيل أو تخزين أو استعمال محتوى المحادثة لتدريب نماذج الذكاء الاصطناعي.</li>
             <li>لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.</li>
         </ul>
-        كيف يمكنني مساعدتكم اليوم؟
+        <br>
+        <span class="highlight-yellow">كيف يمكنني مساعدتكم اليوم؟</span>
     </div>
     """, unsafe_allow_html=True)
 
