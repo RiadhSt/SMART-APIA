@@ -103,7 +103,7 @@ if not st.session_state.messages:
             <span class="highlight-yellow">كيف يمكنني مساعدتكم اليوم؟</span>
         </ul>
 
-        <span class="highlight-yellow">كيف يمكنني مساعدتكم اليوم؟</span>
+
     </div>
     """, unsafe_allow_html=True)
 
