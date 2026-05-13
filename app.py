@@ -15,11 +15,14 @@ st.set_page_config(page_title="APIA Expert", layout="wide") # تم تغييره�
 
 st.markdown(f"""
     <style>
-    /* تطبيق هوية الموقع البصرية */
+    /* تطبيق هوية الموقع البصرية بناءً على صورة image_2df433.jpg */
     :root {{
         --green-deep: #0a5c35;
         --gold: #d4b661;
         --text-primary: #ffffff;
+        --glass-bg: rgba(255, 255, 255, 0.11);
+        --glass-border: rgba(255, 255, 255, 0.22);
+        --radius: 20px;
     }}
 
     /* جعل الخلفية شفافة وإزالة اللون الأزرق الافتراضي */
@@ -29,13 +32,17 @@ st.markdown(f"""
         text-align: right;
     }}
 
-    /* تكبير عرض الصندوق (التنبيه) ليملأ الصفحة */
-    div[data-testid="stNotification"] {{
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid var(--gold) !important;
+    /* تحويل الصناديق إلى نمط البطاقات الزجاجية (Glassmorphism) */
+    div[data-testid="stNotification"], [data-testid="stChatMessage"] {{
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(12px) !important; /* تأثير الضبابية الزجاجي */
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: var(--radius) !important;
         color: white !important;
-        max-width: 100% !important; /* هذا السطر يقوم بتكبير العرض */
-        margin: 0 auto;
+        max-width: 100% !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
     }}
 
     /* تصحيح ألوان النصوص */
@@ -45,12 +52,9 @@ st.markdown(f"""
         text-align: right;
     }}
 
-    /* تخصيص صناديق الدردشة لتكون عريضة ومتناسقة */
-    [data-testid="stChatMessage"] {{
-        background-color: rgba(255, 255, 255, 0.08) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 20px !important;
-        max-width: 100% !important;
+    /* إخفاء الأيقونات الزرقاء وجعلها ذهبية لتناسب الهوية */
+    div[data-testid="stNotification"] svg {{
+        fill: var(--gold) !important;
     }}
 
     /* تنسيق حقل الإدخال السفلي ليطابق صورة image_2dfc50.png */
