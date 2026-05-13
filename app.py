@@ -10,17 +10,66 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة (إصلاح اتجاه الأيقونات والنصوص) ---
+# --- 2. تخصيص الواجهة (حل تضارب الـ RTL والإطار الأحمر) ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown("""
     <style>
-    /* إخفاء الخلفيات الافتراضية */
+    /* إخفاء الخلفيات */
     .stApp, .main, .block-container {
         background: transparent !important;
     }
 
-    /* تصميم البطاقة الترحيبية الزجاجية */
+    /* --- حل مشكلة الأيقونات على اليمين (إجبار الترتيب العربي) --- */
+    /* استهداف الحاوية التي تجمع الأيقونة والنص */
+    div[data-testid="stChatMessage"] {
+        display: flex !important;
+        flex-direction: row-reverse !important; /* وضع الأيقونة يميناً والنص يسارها */
+        justify-content: flex-start !important;
+        direction: rtl !important;
+    }
+
+    /* إزالة الخلفية الرمادية من الأيقونة نفسها لدمجها */
+    div[data-testid="stChatMessageAvatarUser"], 
+    div[data-testid="stChatMessageAvatarAssistant"] {
+        background-color: transparent !important;
+        margin-left: 15px !important; /* مسافة بين الأيقونة والنص من جهة اليمين */
+        margin-right: 0px !important;
+    }
+
+    /* --- حل مشكلة الإطار الأحمر في صندوق السؤال --- */
+    /* استهداف الحاوية العلوية لمنع الأحمر تماماً */
+    [data-testid="stChatInput"] {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+    
+    /* استهداف كل الطبقات الداخلية التي قد تحمل الإطار الأحمر */
+    [data-testid="stChatInput"] > div {
+        border: none !important;
+        box-shadow: none !important;
+        background-color: transparent !important;
+    }
+
+    /* تنسيق منطقة الكتابة وإلغاء أي تأثير عند النقر (Focus) */
+    .stChatInput textarea {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        color: white !important;
+        border: 1px solid rgba(212, 182, 97, 0.4) !important;
+        border-radius: 15px !important;
+        direction: rtl !important;
+        text-align: right !important;
+    }
+
+    /* ضمان عدم ظهور الأحمر عند الضغط للكتابة */
+    .stChatInput textarea:focus {
+        border: 1px solid #d4b661 !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    /* البطاقة الترحيبية الزجاجية */
     .welcome-card {
         background: rgba(255, 255, 255, 0.07) !important;
         backdrop-filter: blur(15px) !important;
@@ -34,48 +83,7 @@ st.markdown("""
         text-align: right !important;
     }
 
-    /* --- إصلاح اتجاه الأيقونات (الصور الرمزية) في الدردشة --- */
-    [data-testid="stChatMessage"] {
-        flex-direction: row-reverse !important; /* إجبار الأيقونة على اليمين والنص بجانبها */
-        text-align: right !important;
-        direction: rtl !important;
-    }
-
-    /* تحسين شكل رسالة الدردشة لتناسب النمط الزجاجي */
-    [data-testid="stChatMessageContent"] {
-        background: transparent !important;
-        margin-right: 10px !important;
-    }
-
-    /* --- الحل الجذري لصندوق السؤال --- */
-    
-    /* حذف الإطار الأحمر تماماً */
-    [data-testid="stChatInput"] {
-        border: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-        background: transparent !important;
-    }
-
-    /* تنسيق منطقة الكتابة وفرض الاتجاه العربي */
-    .stChatInput textarea {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        color: white !important;
-        border: 1px solid rgba(212, 182, 97, 0.4) !important;
-        border-radius: 15px !important;
-        direction: rtl !important;
-        text-align: right !important;
-        unicode-bidi: bidi-override !important; 
-    }
-
-    /* التأكد من اختفاء الأحمر عند النقر (Focus) */
-    .stChatInput textarea:focus {
-        box-shadow: none !important;
-        outline: none !important;
-        border: 1px solid #d4b661 !important;
-    }
-
-    /* توحيد نصوص المحادثة */
+    /* توحيد النصوص */
     .stMarkdown, p, span {
         color: #ffffff !important;
         direction: RTL !important;
@@ -83,7 +91,6 @@ st.markdown("""
     }
 
     svg { fill: #d4b661 !important; }
-    a { color: #d4b661 !important; }
     </style>
     """, unsafe_allow_html=True)
 
