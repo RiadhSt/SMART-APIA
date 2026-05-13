@@ -10,18 +10,18 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة لفرض الشفافية وتصحيح الألوان والاتجاهات ---
+# --- 2. تخصيص الواجهة لفرض الشفافية الكاملة وتصحيح الألوان ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown("""
     <style>
-    /* 1. إخفاء الخلفيات الافتراضية */
+    /* 1. إخفاء أي خلفيات بيضاء أو رمادية افتراضية */
     .stApp, .main, .block-container, [data-testid="stHeader"] {
         background: transparent !important;
         background-color: transparent !important;
     }
 
-    /* 2. تصميم البطاقة الترحيبية الزجاجية */
+    /* 2. تصميم "البطاقة الزجاجية" للنص الترحيبي (بديل st.info الأزرق) */
     .welcome-card {
         background: rgba(255, 255, 255, 0.07) !important;
         backdrop-filter: blur(15px) !important;
@@ -36,55 +36,29 @@ st.markdown("""
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
     }
 
-    /* 3. تصحيح نافذة السؤال (تغيير الأخضر إلى أسود/رمادي داكن) */
+    /* 3. تصحيح نافذة السؤال (Input Box) لتصبح بخلفية داكنة بدلاً من الأخضر */
     [data-testid="stChatInput"] {
         background-color: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
     }
     .stChatInput textarea {
-        background-color: #121212 !important; /* لون أسود داكن */
+        /* تم تغيير اللون هنا من الأخضر الداكن إلى الأسود الرمادي */
+        background-color: #1a1a1a !important; 
         color: white !important;
-        border: 1px solid #d4b661 !important; /* إطار ذهبي */
+        border: 1px solid #d4b661 !important; /* حد ذهبي صريح */
         border-radius: 12px !important;
-        direction: rtl !important;
-        text-align: right !important;
-    }
-    
-    /* إلغاء الإطار الأحمر تماماً عند التركيز */
-    .stChatInput textarea:focus {
-        box-shadow: 0 0 10px rgba(212, 182, 97, 0.3) !important;
-        border: 1px solid #d4b661 !important;
-        outline: none !important;
     }
 
-    /* 4. تعديل مكان الأيقونات (الصور الرمزية) لتظهر على اليمين */
-    [data-testid="stChatMessage"] {
-        flex-direction: row-reverse !important;
-        direction: rtl !important;
-        background: transparent !important;
-    }
-    
-    [data-testid="stChatMessageContent"] {
-        margin-right: 15px !important;
-        margin-left: 0px !important;
-        text-align: right !important;
-    }
-
-    /* 5. فرض اللون الذهبي للأيقونات والرموز */
-    svg { fill: #d4b661 !important; }
-    [data-testid="stChatMessageAvatarUser"] svg, 
-    [data-testid="stChatMessageAvatarAssistant"] svg {
-        fill: #d4b661 !important;
-        color: #d4b661 !important;
-    }
-
-    /* 6. تنسيق النصوص العامة والروابط */
-    .stMarkdown, p, span, div, li {
+    /* 4. إجبار كافة النصوص على اللون الأبيض وRTL */
+    .stMarkdown, p, span, div {
         color: #ffffff !important;
         direction: RTL !important;
         text-align: right !important;
     }
+
+    /* تغيير لون الأيقونات للذهبي لمنع أي ظهور للأزرق */
+    svg { fill: #d4b661 !important; }
+    
+    /* تنسيق الروابط */
     a { color: #d4b661 !important; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
@@ -108,7 +82,7 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- النص الترحيبي ---
+# --- النص الترحيبي (باستخدام HTML صرف لضمان ثبات اللون) ---
 if not st.session_state.messages:
     st.markdown("""
     <div class="welcome-card">
