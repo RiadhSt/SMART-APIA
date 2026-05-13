@@ -10,67 +10,64 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة لتثبيت الألوان ومنع اللون الأسود والأزرق ---
+# --- 2. تخصيص الواجهة لفرض المظهر الداكن والشفاف (Fix for image_2d9371.png) ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown(f"""
     <style>
-    /* فرض الخلفية الشفافة على كل المستويات لمنع اللون الأسود */
-    .stApp, .main, .block-container {{
+    /* 1. تنظيف شامل لكل خلفيات Streamlit البيضاء */
+    .stApp, .main, .block-container, [data-testid="stHeader"], [data-testid="stToolbar"] {{
         background: transparent !important;
         background-color: transparent !important;
     }}
 
-    /* تطبيق هوية الموقع البصرية بناءً على صورة image_2df433.jpg */
+    /* 2. فرض مظهر البطاقات الزجاجية بناءً على هويتك البصرية */
     :root {{
-        --green-deep: #0a5c35;
         --gold: #d4b661;
-        --text-primary: #ffffff;
-        --glass-bg: rgba(255, 255, 255, 0.11);
-        --glass-border: rgba(255, 255, 255, 0.22);
-        --radius: 20px;
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
     }}
 
-    /* منع اللون الأزرق والأسود في صناديق التنبيه والدردشة */
+    /* تنسيق صندوق الترحيب والرسائل لمنع اللون الأزرق أو الأبيض الباهت */
     div[data-testid="stNotification"], [data-testid="stChatMessage"], .stAlert {{
         background: var(--glass-bg) !important;
-        background-color: var(--glass-bg) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
         border: 1px solid var(--glass-border) !important;
-        border-radius: var(--radius) !important;
+        border-radius: 20px !important;
         color: white !important;
         max-width: 100% !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
     }}
 
-    /* إخفاء أي خلفيات زرقاء افتراضية للنصوص */
-    .stMarkdown, p, h1, h2, h3, li, span, label {{
-        color: var(--text-primary) !important;
+    /* 3. تصحيح ألوان النصوص لتكون بيضاء ناصعة وواضحة */
+    .stMarkdown, p, h1, h2, h3, li, span, label, div {{
+        color: #ffffff !important;
         direction: RTL !important;
         text-align: right !important;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5) !important; /* ظل خفيف للنص لزيادة الوضوح */
     }}
 
-    /* تغيير لون أيقونات التنبيه من الأزرق إلى الذهبي */
+    /* 4. تنسيق حقل الإدخال السفلي (Input Box) */
+    [data-testid="stChatInput"] {{
+        background-color: transparent !important;
+    }}
+    .stChatInput textarea {{
+        background-color: rgba(18, 42, 30, 0.9) !important;
+        color: white !important;
+        border: 1px solid var(--gold) !important;
+        border-radius: 15px !important;
+    }}
+
+    /* تغيير لون الأيقونات (التي تظهر زرقاء في صورتك) إلى الذهبي */
     svg {{
         fill: var(--gold) !important;
     }}
-
-    /* تنسيق حقل الإدخال السفلي ومنع الإطار الأزرق عند الكتابة */
-    .stChatInput textarea {{
-        background-color: rgba(18, 42, 30, 0.8) !important;
-        color: white !important;
-        border: 1px solid var(--gold) !important;
-    }}
-    .stChatInput textarea:focus {{
-        border: 1px solid var(--gold) !important;
-        box-shadow: 0 0 5px var(--gold) !important;
-    }}
     
-    /* تنسيق الروابط بالذهبي */
+    /* تنسيق الروابط */
     a {{
         color: var(--gold) !important;
-        text-decoration: underline !important;
+        font-weight: bold !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -94,7 +91,7 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- النص الترحيبي الكامل الثابت ---
+# --- النص الترحيبي الكامل (الثابت والواضح) ---
 if not st.session_state.messages:
     full_welcome_text = """
     مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية المطوّر اعتماداً على تقنيات الذكاء الاصطناعي.
