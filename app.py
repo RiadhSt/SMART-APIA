@@ -15,51 +15,52 @@ st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown(f"""
     <style>
-    /* 1. تنظيف شامل لكل خلفيات Streamlit البيضاء */
+    /* 1. تنظيف شامل وفرض الشفافية على كل الخلفيات لمنع تحولها للأسود */
     .stApp, .main, .block-container, [data-testid="stHeader"], [data-testid="stToolbar"] {{
         background: transparent !important;
         background-color: transparent !important;
     }}
 
-    /* 2. فرض مظهر البطاقات الزجاجية بناءً على هويتك البصرية */
+    /* 2. فرض مظهر البطاقات الزجاجية الاحترافي */
     :root {{
         --gold: #d4b661;
-        --glass-bg: rgba(255, 255, 255, 0.1);
-        --glass-border: rgba(255, 255, 255, 0.2);
+        --glass-bg: rgba(255, 255, 255, 0.08); /* درجة شفافة متوازنة */
+        --glass-border: rgba(255, 255, 255, 0.15);
     }}
 
-    /* تنسيق صندوق الترحيب والرسائل لمنع اللون الأزرق أو الأبيض الباهت */
+    /* تنسيق صناديق التنبيه والرسائل لمنع اللون الأزرق الافتراضي */
     div[data-testid="stNotification"], [data-testid="stChatMessage"], .stAlert {{
         background: var(--glass-bg) !important;
+        background-color: var(--glass-bg) !important;
         backdrop-filter: blur(15px) !important;
         -webkit-backdrop-filter: blur(15px) !important;
         border: 1px solid var(--glass-border) !important;
         border-radius: 20px !important;
         color: white !important;
         max-width: 100% !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
     }}
 
-    /* 3. تصحيح ألوان النصوص لتكون بيضاء ناصعة وواضحة */
+    /* 3. تصحيح ألوان النصوص لضمان الوضوح التام */
     .stMarkdown, p, h1, h2, h3, li, span, label, div {{
         color: #ffffff !important;
         direction: RTL !important;
         text-align: right !important;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5) !important; /* ظل خفيف للنص لزيادة الوضوح */
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.4) !important;
     }}
 
-    /* 4. تنسيق حقل الإدخال السفلي (Input Box) */
+    /* 4. تنسيق حقل الإدخال السفلي (Input Box) وتثبيت ألوانه */
     [data-testid="stChatInput"] {{
         background-color: transparent !important;
     }}
     .stChatInput textarea {{
-        background-color: rgba(18, 42, 30, 0.9) !important;
+        background-color: rgba(18, 42, 30, 0.85) !important;
         color: white !important;
         border: 1px solid var(--gold) !important;
         border-radius: 15px !important;
     }}
 
-    /* تغيير لون الأيقونات (التي تظهر زرقاء في صورتك) إلى الذهبي */
+    /* تثبيت لون الأيقونات بالذهبي ومنع اللون الأزرق */
     svg {{
         fill: var(--gold) !important;
     }}
@@ -68,6 +69,7 @@ st.markdown(f"""
     a {{
         color: var(--gold) !important;
         font-weight: bold !important;
+        text-decoration: underline !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -98,7 +100,7 @@ if not st.session_state.messages:
     أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات وغيرها، وذلك بالاستناد حصريا إلى وثائق وتقارير مفتوحة ومنشورة للعموم على موقع الوكالة.
     
     تنبيه:
-    * هذه الخدمة للإرشاد العام وقد يقع بعض الالتباس. يُرجى التثبت من الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر kouki.riadh@apia.com.tn.
+    * هذه الخدمة للإرشاد العام وقد تقع بعض الالتباس. يُرجى التثبت من الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر kouki.riadh@apia.com.tn.
     * يرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).
     * لا يتم تسجيل أو تخزين أو استعمال محتوى المحادثة لتدريب نماذج الذكاء الاصطناعي.
     * لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.
