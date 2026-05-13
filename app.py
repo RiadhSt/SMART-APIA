@@ -10,55 +10,65 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة لفرض الشفافية الكاملة وتصحيح الألوان ---
+# --- 2. تخصيص الواجهة (إلغاء الإطار الأحمر والخلفية الرمادية) ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown("""
     <style>
-    /* 1. إخفاء أي خلفيات بيضاء أو رمادية افتراضية */
-    .stApp, .main, .block-container, [data-testid="stHeader"] {
+    /* 1. تنظيف شامل للخلفيات */
+    .stApp, .main, .block-container {
         background: transparent !important;
-        background-color: transparent !important;
     }
 
-    /* 2. تصميم "البطاقة الزجاجية" للنص الترحيبي (بديل st.info الأزرق) */
+    /* 2. تصميم البطاقة الترحيبية الزجاجية */
     .welcome-card {
         background: rgba(255, 255, 255, 0.07) !important;
         backdrop-filter: blur(15px) !important;
         -webkit-backdrop-filter: blur(15px) !important;
-        border: 1px solid rgba(212, 182, 97, 0.3) !important;
+        border: 1px solid rgba(212, 182, 97, 0.25) !important;
         border-radius: 20px !important;
         padding: 25px !important;
         color: white !important;
         margin-bottom: 30px !important;
         direction: rtl !important;
         text-align: right !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
     }
 
-    /* 3. تصحيح نافذة السؤال (Input Box) لتبرز عن خلفية الصفحة */
+    /* 3. حل جذري لصندوق السؤال (إزالة الأحمر والرمادي) */
+    /* استهداف الحاوية الخارجية لإلغاء أي إطار أحمر */
     [data-testid="stChatInput"] {
+        border: none !important;
         background-color: transparent !important;
-    }
-    .stChatInput textarea {
-        background-color: rgba(18, 42, 30, 0.95) !important; /* لون أخضر داكن جداً وواضح */
-        color: white !important;
-        border: 1px solid #d4b661 !important; /* حد ذهبي صريح */
-        border-radius: 12px !important;
+        box-shadow: none !important;
     }
 
-    /* 4. إجبار كافة النصوص على اللون الأبيض وRTL */
-    .stMarkdown, p, span, div {
+    /* استهداف منطقة الكتابة الفعلية */
+    .stChatInput textarea {
+        background-color: rgba(255, 255, 255, 0.05) !important; /* خلفية زجاجية خفيفة جداً */
+        color: white !important;
+        border: 1px solid rgba(212, 182, 97, 0.4) !important; /* إطار ذهبي نحيف */
+        border-radius: 15px !important;
+        box-shadow: none !important;
+    }
+
+    /* إزالة الإطار الأحمر عند النقر أو التركيز (Focus) */
+    .stChatInput textarea:focus {
+        border: 1px solid #d4b661 !important; /* تحويله لذهبي ثابت عند التركيز */
+        outline: none !important;
+        box-shadow: 0 0 10px rgba(212, 182, 97, 0.2) !important;
+    }
+
+    /* 4. توحيد نصوص المحادثة */
+    .stMarkdown, p, span {
         color: #ffffff !important;
         direction: RTL !important;
         text-align: right !important;
     }
 
-    /* تغيير لون الأيقونات للذهبي لمنع أي ظهور للأزرق */
+    /* أيقونات ذهبية */
     svg { fill: #d4b661 !important; }
     
-    /* تنسيق الروابط */
-    a { color: #d4b661 !important; font-weight: bold; }
+    a { color: #d4b661 !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -81,7 +91,7 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- النص الترحيبي (باستخدام HTML صرف لضمان ثبات اللون) ---
+# --- عرض النص الترحيبي بنمط البطاقة الزجاجية ---
 if not st.session_state.messages:
     st.markdown("""
     <div class="welcome-card">
@@ -89,7 +99,7 @@ if not st.session_state.messages:
         أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات وغيرها، وذلك بالاستناد حصرياً إلى وثائق وتقارير مفتوحة ومنشورة للعموم على موقع الوكالة.
         <br><br>
         <strong>تنبيه:</strong>
-        <ul style="list-style-type: disc; padding-right: 20px;">
+        <ul style="list-style-type: disc; padding-right: 20px; margin-top: 10px;">
             <li>هذه الخدمة للإرشاد العام وقد يقع بعض الالتباس. يُرجى التثبت من الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر kouki.riadh@apia.com.tn.</li>
             <li>يرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).</li>
             <li>لا يتم تسجيل أو تخزين أو استعمال محتوى المحادثة لتدريب نماذج الذكاء الاصطناعي.</li>
