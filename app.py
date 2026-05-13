@@ -10,7 +10,7 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة (حل تضارب الـ RTL والإطار الأحمر) ---
+# --- 2. تخصيص الواجهة (إعادة الألوان وموضع الأيقونات لليمين) ---
 st.set_page_config(page_title="APIA Expert", layout="wide")
 
 st.markdown("""
@@ -20,56 +20,72 @@ st.markdown("""
         background: transparent !important;
     }
 
-    /* --- حل مشكلة الأيقونات على اليمين (إجبار الترتيب العربي) --- */
-    /* استهداف الحاوية التي تجمع الأيقونة والنص */
+    /* --- إعادة الأيقونات لليمين وفرض اللون الذهبي --- */
+    /* استهداف حاوية الرسالة لتعمل بنظام Flex عكسي */
     div[data-testid="stChatMessage"] {
-        display: flex !important;
-        flex-direction: row-reverse !important; /* وضع الأيقونة يميناً والنص يسارها */
-        justify-content: flex-start !important;
+        flex-direction: row-reverse !important;
+        background: transparent !important;
         direction: rtl !important;
     }
 
-    /* إزالة الخلفية الرمادية من الأيقونة نفسها لدمجها */
-    div[data-testid="stChatMessageAvatarUser"], 
-    div[data-testid="stChatMessageAvatarAssistant"] {
-        background-color: transparent !important;
-        margin-left: 15px !important; /* مسافة بين الأيقونة والنص من جهة اليمين */
-        margin-right: 0px !important;
+    /* استهداف الأيقونة مباشرة لفرض اللون الذهبي */
+    div[data-testid="stChatMessageAvatarUser"] svg, 
+    div[data-testid="stChatMessageAvatarAssistant"] svg,
+    div[data-testid="stChatMessageAvatarUser"] div, 
+    div[data-testid="stChatMessageAvatarAssistant"] div {
+        fill: #d4b661 !important;
+        color: #d4b661 !important;
+        background-color: rgba(212, 182, 97, 0.1) !important;
+        border: 1px solid rgba(212, 182, 97, 0.5) !important;
     }
 
-    /* --- حل مشكلة الإطار الأحمر في صندوق السؤال --- */
-    /* استهداف الحاوية العلوية لمنع الأحمر تماماً */
+    /* موازنة المسافات بعد قلب الاتجاه */
+    div[data-testid="stChatMessage"] {
+        padding-right: 0px !important;
+    }
+    
+    /* محتوى الرسالة */
+    div[data-testid="stChatMessageContent"] {
+        margin-right: 15px !important;
+        margin-left: 0px !important;
+        text-align: right !important;
+    }
+
+    /* --- صندوق الأسئلة الممتاز (بدون إطار أحمر وبدون خلفية رمادية) --- */
     [data-testid="stChatInput"] {
         border: none !important;
         box-shadow: none !important;
-        outline: none !important;
+        background-color: transparent !important;
     }
     
-    /* استهداف كل الطبقات الداخلية التي قد تحمل الإطار الأحمر */
     [data-testid="stChatInput"] > div {
         border: none !important;
         box-shadow: none !important;
         background-color: transparent !important;
     }
 
-    /* تنسيق منطقة الكتابة وإلغاء أي تأثير عند النقر (Focus) */
     .stChatInput textarea {
         background-color: rgba(255, 255, 255, 0.05) !important;
         color: white !important;
-        border: 1px solid rgba(212, 182, 97, 0.4) !important;
+        border: 1px solid rgba(212, 182, 97, 0.5) !important;
         border-radius: 15px !important;
         direction: rtl !important;
         text-align: right !important;
+        box-shadow: none !important;
     }
 
-    /* ضمان عدم ظهور الأحمر عند الضغط للكتابة */
     .stChatInput textarea:focus {
         border: 1px solid #d4b661 !important;
-        box-shadow: none !important;
+        box-shadow: 0 0 10px rgba(212, 182, 97, 0.2) !important;
         outline: none !important;
     }
 
-    /* البطاقة الترحيبية الزجاجية */
+    /* زر الإرسال */
+    [data-testid="stChatInputSubmitButton"] svg {
+        fill: #d4b661 !important;
+    }
+
+    /* البطاقة الترحيبية */
     .welcome-card {
         background: rgba(255, 255, 255, 0.07) !important;
         backdrop-filter: blur(15px) !important;
@@ -89,8 +105,6 @@ st.markdown("""
         direction: RTL !important;
         text-align: right !important;
     }
-
-    svg { fill: #d4b661 !important; }
     </style>
     """, unsafe_allow_html=True)
 
