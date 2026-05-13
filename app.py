@@ -10,62 +10,67 @@ if not api_key:
 
 genai.configure(api_key=api_key)
 
-# --- 2. تخصيص الواجهة لتطابق صورة الموقع image_39555e.jpg ---
+# --- 2. تخصيص الواجهة لتطابق ألوان موقعك (Visual Integration) ---
 st.set_page_config(page_title="APIA Expert", layout="centered")
 
 st.markdown(f"""
     <style>
-    /* تطبيق هوية الموقع البصرية بناءً على لوحة الألوان المقدمة */
+    /* تطبيق هوية الموقع البصرية بناءً على صورة الموقع image_39555e.jpg */
     :root {{
         --green-deep: #0a5c35;
         --gold: #d4b661;
         --text-primary: #ffffff;
-        --glass-bg: rgba(255, 255, 255, 0.05);
     }}
 
-    /* جعل الخلفية شفافة لتندمج مع تصميم الموقع المدمج */
+    /* جعل الخلفية شفافة تماماً وإزالة اللون الأزرق الافتراضي */
     .stApp {{
         background: transparent;
         direction: RTL;
         text-align: right;
     }}
 
-    /* تصحيح ألوان النصوص لتصبح واضحة جداً */
-    .stMarkdown, p, h1, h2, h3, li {{
+    /* تصحيح شامل لجميع ألوان النصوص والأيقونات */
+    .stMarkdown, p, h1, h2, h3, li, span, label {{
         color: var(--text-primary) !important;
         direction: RTL;
         text-align: right;
-        font-weight: 400;
     }}
 
-    /* تنسيق صندوق التنبيه ليكون شفافاً بحدود ذهبية (كما في الصورة) */
-    .stAlert {{
-        background-color: var(--glass-bg) !important;
+    /* إزالة اللون الأزرق من صندوق التنبيه وجعله ذهبياً شفافاً */
+    div[data-testid="stNotification"] {{
+        background-color: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid var(--gold) !important;
         color: white !important;
-        border-radius: 15px;
+    }}
+    
+    /* إخفاء أيقونات المعلومات الزرقاء الافتراضية */
+    div[data-testid="stNotification"] svg {{
+        fill: var(--gold) !important;
     }}
 
-    /* تخصيص صناديق الدردشة لتكون زجاجية */
+    /* تخصيص صناديق الدردشة لتكون زجاجية شفافة */
     [data-testid="stChatMessage"] {{
         background-color: rgba(255, 255, 255, 0.08) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-radius: 20px !important;
     }}
 
-    /* تحسين مظهر حقل الإدخال السفلي */
+    /* تنسيق حقل الإدخال السفلي (إزالة الإطار الأزرق عند التركيز) */
     .stChatInput textarea {{
         background-color: rgba(18, 42, 30, 0.8) !important;
         color: white !important;
         border: 1px solid var(--gold) !important;
         border-radius: 12px !important;
     }}
+    .stChatInput textarea:focus {{
+        border: 1px solid var(--gold) !important;
+        box-shadow: 0 0 5px var(--gold) !important;
+    }}
     
-    /* تنسيق الروابط لتكون باللون الذهبي الواضح */
+    /* تنسيق الروابط والبريد الإلكتروني بالذهبي الصريح */
     a {{
         color: var(--gold) !important;
-        text-decoration: none;
-        font-weight: bold;
+        text-decoration: underline !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -89,21 +94,20 @@ if "chat" not in st.session_state:
     )
     st.session_state.chat = model.start_chat(history=[])
 
-# --- النص الترحيبي المحسن بصرياً بناءً على صورة الموقع ---
+# --- النص الترحيبي الكامل كما ورد منك تماماً ---
 if not st.session_state.messages:
-    welcome_text = """
-    **مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية**
+    full_welcome_text = """
+    مرحباً بكم في المساعد الذكي لوكالة النهوض بالاستثمارات الفلاحية المطوّر اعتماداً على تقنيات الذكاء الاصطناعي.
+    أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات وغيرها، وذلك بالاستناد حصريا إلى وثائق وتقارير مفتوحة ومنشورة للعموم على موقع الوكالة.
     
-    أساعدكم في تقديم إجابات عامة حول الاستثمار الفلاحي والمنح وإجراءات تكوين الملفات، وذلك بالاستناد حصرياً إلى وثائق وتقارير الوكالة المنشورة.
+    تنبيه:
+    هذه الخدمة للإرشاد العام وقد تقع بعض الأخطاء أو الالتباس. يُرجى التثبت من النصوص/الوثائق الأصلية، وعند الحاجة يمكنكم التواصل عبر: [kouki.riadh@apia.com.tn](mailto:kouki.riadh@apia.com.tn).
+    يُرجى عدم إدخال أي بيانات أو معطيات شخصية داخل المحادثة (الاسم، الهاتف، البريد الإلكتروني، رقم بطاقة التعريف الوطنية، رقم مقرر إسناد الامتيازات، …).
+    لا يتم اعتماد محتوى هذه الدردشة كقرار إداري أو التزام رسمي للوكالة.
     
-    ⚠️ **تنبيه هام:**
-    * هذه الخدمة للإرشاد العام؛ يُرجى التثبت من النصوص الأصلية.
-    * للتواصل الرسمي: [kouki.riadh@apia.com.tn](mailto:kouki.riadh@apia.com.tn).
-    * يُرجى عدم إدخال أي بيانات شخصية (رقم تعريف، هاتف، إلخ).
-    
-    **كيف يمكنني مساعدتكم اليوم؟**
+    كيف يمكنني مساعدتكم اليوم؟
     """
-    st.info(welcome_text)
+    st.info(full_welcome_text)
 
 # عرض تاريخ المحادثة
 for m in st.session_state.messages:
