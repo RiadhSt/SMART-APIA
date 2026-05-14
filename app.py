@@ -11,7 +11,7 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 # --- 2. تخصيص الواجهة لفرض الشفافية الكاملة وتصحيح الألوان ---
-#st.set_page_config(page_title="APIA Expert", layout="wide")
+st.set_page_config(page_title="APIA Expert", layout="very wide")
 
 st.markdown("""
     <style>
