@@ -18,7 +18,7 @@ st.markdown("""
     /* 1. إخفاء أي خلفيات بيضاء أو رمادية افتراضية */
     .stApp, .main, .block-container, [data-testid="stHeader"] {
         background: Transparent !important;
-        background-color: #0a1a12 !important;
+        background-color: Transparent !important;
     }
 
     /* 2. تصميم "البطاقة الزجاجية" للنص الترحيبي (بديل st.info الأزرق) */
