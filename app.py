@@ -17,8 +17,8 @@ st.markdown("""
     <style>
     /* 1. إخفاء أي خلفيات بيضاء أو رمادية افتراضية */
     .stApp, .main, .block-container, [data-testid="stHeader"] {
-        background: Transparent !important;
-        background-color: Transparent !important;
+        background: transparent !important;
+        background-color: transparent !important;
     }
 
     /* 2. تصميم "البطاقة الزجاجية" للنص الترحيبي (بديل st.info الأزرق) */
@@ -38,7 +38,7 @@ st.markdown("""
 
     /* 3. تصحيح نافذة السؤال (Input Box) لتصبح بخلفية داكنة بدلاً من الأخضر */
     [data-testid="stChatInput"] {
-        background-color: transparent !important;
+        background-color: #0a1a12 !important;
     }
     .stChatInput textarea {
         /* تم تغيير اللون هنا من الأخضر الداكن إلى الأسود الرمادي */
