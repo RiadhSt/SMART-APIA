@@ -17,7 +17,7 @@ st.markdown("""
     <style>
     /* 1. إخفاء أي خلفيات بيضاء أو رمادية افتراضية */
     .stApp, .main, .block-container, [data-testid="stHeader"] {
-        background: #0a1a12 !important;
+        background: Transparent !important;
         background-color: #0a1a12 !important;
     }
 
