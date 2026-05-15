@@ -64,25 +64,33 @@ st.markdown("""
     color: #fffd01 !important; /* أصفر صريح وواضح */
     font-weight: bold !important;
 }
-/* تصحيح حاوية الإدخال لمنع انكسار السطر */
-[data-testid="stChatInput"] > div {
+/* 1. استهداف الحاوية الكبرى لصندوق الدردشة */
+[data-testid="stChatInput"] {
     display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* 2. منع انكسار السطر في الحاوية الداخلية */
+[data-testid="stChatInput"] > div {
     flex-direction: row !important;
-    align-items: flex-end !important;
-    flex-wrap: nowrap !important; /* يمنع نزول السهم تحت الخانة نهائياً */
+    flex-wrap: nowrap !important; /* هذا هو السطر الحاسم */
+    display: flex !important;
+    width: 100% !important;
 }
 
-/* إجبار الخانة على ترك مساحة كافية للسهم */
+/* 3. تعديل مساحة منطقة الكتابة */
 [data-testid="stChatInput"] textarea {
-    flex: 1 !important;
-    min-width: 0 !important;
+    flex: 1 1 auto !important; /* السماح لها بالتمدد */
+    min-width: 0 !important;   /* منعها من دفع السهم للخارج */
 }
 
-/* تثبيت زر الإرسال (السهم) في مكانه */
+/* 4. إجبار زر الإرسال على البقاء بجانب النص */
 [data-testid="stChatInput"] button {
-    margin-bottom: 5px !important;
-    margin-left: 5px !important;
-    flex-shrink: 0 !important; /* يمنع تصغير السهم أو إزاحته */
+    position: static !important; /* إلغاء التموضع المطلق إن وجد */
+    margin: 0 5px !important;
+    flex-shrink: 0 !important;   /* منع الزر من الصغر أو الاختفاء */
+    align-self: center !important;
 }
     </style>
     """, unsafe_allow_html=True)
