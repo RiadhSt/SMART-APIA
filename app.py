@@ -16,73 +16,101 @@ st.set_page_config(page_title="APIA Expert", layout="wide")
 st.markdown("""
     <style>
     /* 1. إخفاء أي خلفيات بيضاء أو رمادية افتراضية */
+
     .stApp, .main, .block-container, [data-testid="stHeader"] {
+
         background: transparent !important;
+
         background-color: transparent !important;
+
     }
+
+
 
     /* 2. تصميم "البطاقة الزجاجية" للنص الترحيبي (بديل st.info الأزرق) */
+
     .welcome-card {
+
         background: rgba(255, 255, 255, 0.07) !important;
+
         backdrop-filter: blur(15px) !important;
+
         -webkit-backdrop-filter: blur(15px) !important;
+
         border: 1px solid rgba(212, 182, 97, 0.3) !important;
+
         border-radius: 20px !important;
+
         padding: 25px !important;
+
         color: white !important;
+
         margin-bottom: 30px !important;
+
         direction: rtl !important;
+
         text-align: right !important;
+
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+
     }
+
+
 
     /* 3. تصحيح نافذة السؤال (Input Box) لتصبح بخلفية داكنة بدلاً من الأخضر */
+
     [data-testid="stChatInput"] {
+
         background-color: #0a1a12 !important;
+
     }
+
     .stChatInput textarea {
+
         /* تم تغيير اللون هنا من الأخضر الداكن إلى الأسود الرمادي */
+
         background-color: #1a1a1a !important; 
+
         color: white !important;
+
         border: 1px solid #d4b661 !important; /* حد ذهبي صريح */
+
         border-radius: 12px !important;
+
     }
+
+
 
     /* 4. إجبار كافة النصوص على اللون الأبيض وRTL */
+
     .stMarkdown, p, span, div {
+
         color: #ffffff !important;
+
         direction: RTL !important;
+
         text-align: right !important;
+
     }
 
+
+
     /* تغيير لون الأيقونات للذهبي لمنع أي ظهور للأزرق */
+
     svg { fill: #d4b661 !important; }
+
     
+
     /* تنسيق الروابط */
+
     a { color: #d4b661 !important; font-weight: bold; }
+
     .highlight-yellow {
+
     color: #fffd01 !important; /* أصفر صريح وواضح */
+
     font-weight: bold !important;
-}
-/* تصحيح حاوية الإدخال لمنع انكسار السطر */
-[data-testid="stChatInput"] > div {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: flex-end !important;
-    flex-wrap: nowrap !important; /* يمنع نزول السهم تحت الخانة نهائياً */
-}
 
-/* إجبار الخانة على ترك مساحة كافية للسهم */
-[data-testid="stChatInput"] textarea {
-    flex: 1 !important;
-    min-width: 0 !important;
-}
-
-/* تثبيت زر الإرسال (السهم) في مكانه */
-[data-testid="stChatInput"] button {
-    margin-bottom: 5px !important;
-    margin-left: 5px !important;
-    flex-shrink: 0 !important; /* يمنع تصغير السهم أو إزاحته */
 }
     </style>
     """, unsafe_allow_html=True)
