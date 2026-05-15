@@ -64,6 +64,26 @@ st.markdown("""
     color: #fffd01 !important; /* أصفر صريح وواضح */
     font-weight: bold !important;
 }
+/* تصحيح حاوية الإدخال لمنع انكسار السطر */
+[data-testid="stChatInput"] > div {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    flex-wrap: nowrap !important; /* يمنع نزول السهم تحت الخانة نهائياً */
+}
+
+/* إجبار الخانة على ترك مساحة كافية للسهم */
+[data-testid="stChatInput"] textarea {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+/* تثبيت زر الإرسال (السهم) في مكانه */
+[data-testid="stChatInput"] button {
+    margin-bottom: 5px !important;
+    margin-left: 5px !important;
+    flex-shrink: 0 !important; /* يمنع تصغير السهم أو إزاحته */
+}
     </style>
     """, unsafe_allow_html=True)
 
